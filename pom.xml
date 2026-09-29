@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Spring Boot 父工程：教程基于 3.4.4 版本，与 Spring AI 1.0 正式版兼容 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.4</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.cai</groupId>
+    <artifactId>cai-ai-agent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>cai-ai-agent</name>
+    <description>cai-ai-agent</description>
+
+    <properties>
+        <!-- Java 21：支持虚拟线程等新特性，教程推荐版本 -->
+        <java.version>21</java.version>
+    </properties>
+
+    <!-- 依赖版本统一管理（BOM：引入后下面的依赖都不用写版本号，避免版本冲突） -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring AI 官方 BOM：管理 spring-ai-* 全家桶版本 -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Spring AI Alibaba BOM：管理阿里系 AI 组件（starter-dashscope 等）的版本 -->
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-bom</artifactId>
+                <version>1.0.0.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Web 场景启动器：内嵌 Tomcat + Spring MVC，用于开发 HTTP 接口 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Hutool 工具库：国产"瑞士军刀"，本项目用于发 HTTP 请求、读 YAML 等 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.37</version>
+        </dependency>
+
+        <!-- Knife4j 接口文档：基于 Swagger 增强，启动后访问 /api/doc.html -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+
+        <!-- 阿里云 DashScope 官方 SDK：最底层的调用方式（对应 SdkAiInvoke 示例） -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dashscope-sdk-java</artifactId>
+            <version>2.19.1</version>
+        </dependency>
+
+        <!-- Spring AI Alibaba：对接通义千问的启动器，本项目核心框架 -->
+        <dependency>
+            <groupId>com.alibaba.cloud.ai</groupId>
+            <artifactId>spring-ai-alibaba-starter-dashscope</artifactId>
+        </dependency>
+
+        <!-- LangChain4j 社区版千问适配：另一种 Java AI 框架（对应 LangChainAiInvoke 示例） -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-community-dashscope</artifactId>
+            <version>1.0.0-beta2</version>
+        </dependency>
+
+        <!-- Spring AI 对接本地 Ollama 大模型（对应 OllamaAiInvoke 示例） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-model-ollama</artifactId>
+        </dependency>
+
+        <!-- Lombok：通过注解（如 @Data、@Slf4j）自动生成样板代码，仅在编译期生效 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- 测试场景启动器：JUnit 5、Mockito、AssertJ 等 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot 打包/运行插件：mvn package 打可执行 jar，mvn spring-boot:run 一键启动 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!-- 打包时排除 Lombok：它只在编译期生效，运行时不需要 -->
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

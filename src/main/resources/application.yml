@@ -1,0 +1,46 @@
+# ==================== Spring 应用基础配置 ====================
+spring:
+  application:
+    name: cai-ai-agent
+  # 激活 local 配置：密钥等敏感信息写在 application-local.yml（该文件已被 .gitignore 忽略）
+  profiles:
+    active: local
+  ai:
+    # 通义千问（DashScope）配置：api-key 优先读环境变量 AI_DASHSCOPE_API_KEY，读不到用占位符防止启动失败
+    # 本地开发时真实密钥写在 application-local.yml 中（local 配置会覆盖这里的值）
+    dashscope:
+      api-key: ${AI_DASHSCOPE_API_KEY:sk-not-configured}
+      chat:
+        options:
+          model: qwen-plus        # 默认对话模型（可选 qwen-turbo / qwen-plus / qwen-max）
+    # 本地 Ollama 大模型：需先安装 Ollama 并拉取模型（对应 OllamaAiInvoke 示例）
+    ollama:
+      base-url: http://localhost:11434   # Ollama 默认本地端口
+      chat:
+        options:
+          model: gemma3:1b      # 使用的小模型，体积小、对硬件要求低
+
+# ==================== Web 服务器配置 ====================
+server:
+  port: 8123                        # 服务端口
+  servlet:
+    context-path: /api              # 全局路径前缀：接口完整路径 = /api + 接口路径
+
+# ==================== SpringDoc（OpenAPI 规范）配置 ====================
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha              # 接口分组按字母排序
+    operations-sorter: alpha        # 接口按字母排序
+  api-docs:
+    path: /v3/api-docs              # OpenAPI JSON 数据路径
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.cai.caiaiagent.controller   # 扫描该包下的接口生成文档
+
+# ==================== Knife4j（接口文档界面增强）配置 ====================
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn                 # 文档界面使用中文
