@@ -78,6 +78,18 @@
             <artifactId>spring-ai-alibaba-starter-dashscope</artifactId>
         </dependency>
 
+        <!-- RAG - Markdown 文档读取器：把知识库 md 文档解析成 Document 列表（ETL 的 Extract 阶段） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-markdown-document-reader</artifactId>
+        </dependency>
+
+        <!-- RAG - 向量存储 Advisor：提供 QuestionAnswerAdvisor 问答拦截器（查询增强阶段） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-advisors-vector-store</artifactId>
+        </dependency>
+
         <!-- LangChain4j 社区版千问适配：另一种 Java AI 框架（对应 LangChainAiInvoke 示例） -->
         <dependency>
             <groupId>dev.langchain4j</groupId>

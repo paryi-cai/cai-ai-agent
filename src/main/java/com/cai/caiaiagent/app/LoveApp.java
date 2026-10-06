@@ -2,15 +2,19 @@ package com.cai.caiaiagent.app;
 
 import com.cai.caiaiagent.advisor.MyLoggerAdvisor;
 import com.cai.caiaiagent.chatmemory.FileBasedChatMemory;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,6 +32,20 @@ import java.util.Map;
 public class LoveApp {
 
     private final ChatClient chatClient;
+
+    /**
+     * RAG 知识库向量存储
+     * 由 LoveAppVectorStoreConfig 创建：项目启动时自动加载 document/ 下的知识文档并向量化入库
+     */
+    @Resource
+    private VectorStore loveAppVectorStore;
+
+    /**
+     * 云知识库检索增强 Advisor（阿里云百炼）
+     * 由 LoveAppRagCloudAdvisorConfig 创建，按 application.yml 的 cloud-index-name 对接云端知识库
+     */
+    @Resource
+    private Advisor loveAppRagCloudAdvisor;
 
     /**
      * 系统提示词（System Prompt）：AI 应用的"灵魂"
@@ -78,6 +96,48 @@ public class LoveApp {
                 .call()
                 .chatResponse();
         String content = response.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + RAG 知识库问答
+     * QuestionAnswerAdvisor 的工作流程：
+     * 1. 调用前：把用户问题向量化，去向量库检索最相似的文档切片，拼进提示词（查询增强）
+     * 2. 调用后：返回 AI 回答（检索到的文档也会放进 Advisor 上下文，可用于溯源）
+     *
+     * @param message 用户问题
+     * @param chatId  会话 id（带记忆，多轮对话可用）
+     * @return AI 基于知识库的回答
+     */
+    public String doChatWithRag(String message, String chatId) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 应用知识库问答（1.0 写法：QuestionAnswerAdvisor.builder(...)）
+                .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + 云知识库问答（阿里云百炼）
+     * 与本地 RAG 的区别：检索走云端知识库服务（文档切分/存储/检索都在百炼平台完成）
+     */
+    public String doChatWithRagCloud(String message, String chatId) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 应用云知识库检索增强 Advisor
+                .advisors(loveAppRagCloudAdvisor)
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
         log.info("content: {}", content);
         return content;
     }

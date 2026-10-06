@@ -43,4 +43,10 @@ springdoc:
 knife4j:
   enable: true
   setting:
-    language: zh_cn                 # 文档界面使用中文
+    language: zh_cn
+
+# ==================== AI 恋爱大师应用配置 ====================
+love-app:
+  rag:
+    # 阿里云百炼云知识库名称（控制台创建时填的名字，代码按"名称"对接而不是 ID）
+    cloud-index-name: 恋爱大师问答                 # 文档界面使用中文

@@ -58,4 +58,28 @@ class LoveAppTest {
         String answer = loveApp.doChatWithTemplate("鱼皮", "我想让另一半更爱我");
         Assertions.assertNotNull(answer);
     }
+
+    /**
+     * RAG 知识库问答：故意提问一个知识库文档里有答案的问题
+     * （"婚后关系不太亲密" 已婚篇文档第 1 问有对应建议）
+     */
+    @Test
+    void testChatWithRag() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "我已经结婚了，但是婚后关系不太亲密，怎么办？";
+        String answer = loveApp.doChatWithRag(message, chatId);
+        Assertions.assertNotNull(answer);
+    }
+
+    /**
+     * 云知识库 RAG 问答（阿里云百炼平台）
+     * 前置条件：百炼控制台已创建同名知识库并导入文档
+     */
+    @Test
+    void testChatWithRagCloud() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "我已经结婚了，但是婚后关系不太亲密，怎么办？";
+        String answer = loveApp.doChatWithRagCloud(message, chatId);
+        Assertions.assertNotNull(answer);
+    }
 }
