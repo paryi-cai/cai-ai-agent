@@ -85,11 +85,28 @@
             <version>1.0.0-beta2</version>
         </dependency>
 
-        <!-- Spring AI 对接本地 Ollama 大模型（对应 OllamaAiInvoke 示例） -->
+        <!-- Kryo 高性能序列化库：FileBasedChatMemory 用它把 Message 对象序列化到文件（JSON 无法直接序列化 Message 接口） -->
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>5.6.2</version>
+        </dependency>
+
+        <!-- victools JSON Schema 生成器：结构化输出（entity()）底层用它生成 JSON Schema
+             必须显式指定 4.37.0，与 Spring AI 1.0 的 jsonschema-module 版本对齐
+             （不指定的话会解析到旧版 4.31.1，导致 NoClassDefFoundError） -->
+        <dependency>
+            <groupId>com.github.victools</groupId>
+            <artifactId>jsonschema-generator</artifactId>
+            <version>4.37.0</version>
+        </dependency>
+
+        <!-- 【已停用】Spring AI 对接本地 Ollama 大模型（不使用本地模型，如需启用取消本段注释）
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
         </dependency>
+        -->
 
         <!-- Lombok：通过注解（如 @Data、@Slf4j）自动生成样板代码，仅在编译期生效 -->
         <dependency>

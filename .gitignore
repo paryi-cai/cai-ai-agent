@@ -37,3 +37,6 @@ application-local.yml
 
 ### 教程资料（付费课程内容，请勿公开分享） ###
 教程md/
+
+### 对话记忆文件持久化运行数据 ###
+chat-memory/

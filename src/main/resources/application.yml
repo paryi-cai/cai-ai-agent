@@ -13,12 +13,12 @@ spring:
       chat:
         options:
           model: qwen-plus        # 默认对话模型（可选 qwen-turbo / qwen-plus / qwen-max）
-    # 本地 Ollama 大模型：需先安装 Ollama 并拉取模型（对应 OllamaAiInvoke 示例）
-    ollama:
-      base-url: http://localhost:11434   # Ollama 默认本地端口
-      chat:
-        options:
-          model: gemma3:1b      # 使用的小模型，体积小、对硬件要求低
+    # 【已停用】本地 Ollama 大模型：需先安装 Ollama 并拉取模型（对应 OllamaAiInvoke 示例），如需启用取消注释
+    # ollama:
+    #   base-url: http://localhost:11434   # Ollama 默认本地端口
+    #   chat:
+    #     options:
+    #       model: gemma3:1b      # 使用的小模型，体积小、对硬件要求低
 
 # ==================== Web 服务器配置 ====================
 server:

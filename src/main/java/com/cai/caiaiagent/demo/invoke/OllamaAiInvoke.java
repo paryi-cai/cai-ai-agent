@@ -5,21 +5,23 @@ import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
+// 【已停用】Ollama 相关注解导入（不使用本地模型）
+// import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+// import org.springframework.stereotype.Component;
 
 /**
- * 扩展：用 Spring AI 调用"本地部署"的大模型（Ollama）
+ * 扩展：用 Spring AI 调用"本地部署"的大模型（Ollama）——【已停用】
  *
- * 前置条件：
- * 1. 本地已安装并启动 Ollama（默认端口 11434）
- * 2. 已执行 ollama pull gemma3:1b 拉取模型（模型名在 application.yml 中配置）
- * 3. 把 demo.ollama.enabled 改为 true 开启本示例
+ * 当前不使用本地模型，注册注解已注释，本类不会生效，仅作学习参考。
+ * 如需重新启用（三步）：
+ * 1. pom.xml：取消 spring-ai-starter-model-ollama 依赖的注释
+ * 2. application.yml：取消 ollama 配置的注释
+ * 3. 本类：取消下面两行注册注解的注释（并把 demo.ollama.enabled 配置改为 true）
  *
- * 对比云端大模型：数据不出本地、免费、可离线；但对硬件有要求、模型能力相对弱
+ * 前置条件：本地已安装并启动 Ollama（默认端口 11434），且已执行 ollama pull gemma3:1b
  */
-@Component
-@ConditionalOnProperty(name = "demo.ollama.enabled", havingValue = "true")
+// @Component
+// @ConditionalOnProperty(name = "demo.ollama.enabled", havingValue = "true")
 public class OllamaAiInvoke implements CommandLineRunner {
 
     /** Spring AI 自动配置的本地 Ollama 模型（字段名 ollamaChatModel 对应 Bean 名称） */
