@@ -2,6 +2,7 @@ package com.cai.caiaiagent.app;
 
 import com.cai.caiaiagent.advisor.MyLoggerAdvisor;
 import com.cai.caiaiagent.chatmemory.FileBasedChatMemory;
+import com.cai.caiaiagent.rag.LoveAppRagCustomAdvisorFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -135,6 +136,50 @@ public class LoveApp {
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 // 应用云知识库检索增强 Advisor
                 .advisors(loveAppRagCloudAdvisor)
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + 按恋爱状态过滤的知识库问答
+     * 演示"元数据过滤检索"：只从指定状态（单身/恋爱/已婚）的文档里检索，
+     * 避免召回其他状态的无关内容，提升检索精度
+     *
+     * @param status 恋爱状态：单身 / 恋爱 / 已婚
+     */
+    public String doChatWithRagByStatus(String message, String chatId, String status) {
+        // 动态创建"带状态过滤"的 RAG Advisor（工厂模式）
+        Advisor ragCustomAdvisor = LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(loveAppVectorStore, status);
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .advisors(ragCustomAdvisor)
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + 知识库问答（运行时动态指定元数据过滤条件）
+     * 演示 QuestionAnswerAdvisor 的 FILTER_EXPRESSION 动态参数：
+     * 与 doChatWithRagByStatus 的区别是"过滤表达式在运行时传入"，适合动态筛选场景
+     *
+     * @param filterExpression 过滤表达式（语法类似 SQL，如 "status == '单身'"）
+     */
+    public String doChatWithRagByFilter(String message, String chatId, String filterExpression) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId)
+                        // 动态过滤表达式：作用在文档元数据上
+                        .param(QuestionAnswerAdvisor.FILTER_EXPRESSION, filterExpression))
+                .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();

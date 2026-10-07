@@ -50,9 +50,16 @@ class LoveAppDocumentLoaderTest {
         // 4. 单条问答的完整内容只出现在一个切片中（证明按 --- 正确切开了）
         long count = documents.stream().filter(d -> d.getText().contains("激情期")).count();
         Assertions.assertEquals(1, count, "已婚篇第 1 问应完整出现在且仅出现在一个切片里");
-    }
 
-    @Test
-    void loadMarkdowns() {
+        // 5. 每个切片都带恋爱状态标签，且"激情期"切片的状态是"已婚"（元数据标注验证）
+        Assertions.assertTrue(documents.stream().allMatch(d -> d.getMetadata().containsKey("status")),
+                "每个切片都应该有 status 元数据");
+        Object status = documents.stream()
+                .filter(d -> d.getText().contains("激情期"))
+                .findFirst()
+                .orElseThrow()
+                .getMetadata()
+                .get("status");
+        Assertions.assertEquals("已婚", status, "已婚篇文档的 status 应为已婚");
     }
 }

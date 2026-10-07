@@ -90,6 +90,25 @@
             <artifactId>spring-ai-advisors-vector-store</artifactId>
         </dependency>
 
+        <!-- PGVector：PostgreSQL 向量存储（第5章：真实向量数据库，数据持久化不丢失） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-pgvector-store</artifactId>
+        </dependency>
+
+        <!-- Spring JDBC：提供 JdbcTemplate（PgVectorStore 依赖它操作数据库） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL 数据库驱动（版本由 Spring Boot 统一管理） -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- LangChain4j 社区版千问适配：另一种 Java AI 框架（对应 LangChainAiInvoke 示例） -->
         <dependency>
             <groupId>dev.langchain4j</groupId>

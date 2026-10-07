@@ -2,6 +2,7 @@ package com.cai.caiaiagent.rag;
 
 import jakarta.annotation.Resource;
 import org.springframework.ai.document.Document;
+import org.springframework.ai.embedding.BatchingStrategy;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -34,9 +35,11 @@ public class LoveAppVectorStoreConfig {
      * @param dashscopeEmbeddingModel Spring AI Alibaba 自动配置的通义千问嵌入模型
      */
     @Bean
-    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel) {
-        // 构建内存向量库（Builder 模式，1.0 版本的写法）
-        SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel).build();
+    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel, BatchingStrategy batchingStrategy) {
+        // 构建内存向量库（Builder 模式，1.0 版本的写法），接入自定义批处理策略
+        SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
+                .batchingStrategy(batchingStrategy)
+                .build();
         // 加载文档：add() 内部会先调用 Embedding 模型把每个文档块转成向量，再存入向量库
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
         simpleVectorStore.add(documents);

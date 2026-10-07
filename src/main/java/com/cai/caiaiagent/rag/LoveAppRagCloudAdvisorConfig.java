@@ -50,8 +50,10 @@ class LoveAppRagCloudAdvisorConfig {
                         .build());
 
         // 检索增强 Advisor：调用前自动检索云端知识库，并把结果拼进提示词
+        // 同时挂载自定义"空上下文增强器"：检索不到内容时输出友好兜底话术
         Advisor advisor = RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(documentRetriever)
+                .queryAugmenter(LoveAppContextualQueryAugmenterFactory.createInstance())
                 .build();
         log.info("云知识库 Advisor 初始化完成，知识库名称：{}", cloudIndexName);
         return advisor;

@@ -40,17 +40,20 @@ class LoveAppDocumentLoader {
             Resource[] resources = resourcePatternResolver.getResources("classpath:document/*.md");
             for (Resource resource : resources) {
                 String fileName = resource.getFilename();
+                // 元数据标注：从文件名推断"恋爱状态"标签，后续可基于它做过滤检索
+                String status = resolveStatus(fileName);
                 // 文档读取配置：
                 // 1. withHorizontalRuleCreateDocument(true)：遇到 --- 水平线就切成独立文档块
                 //    （我们的知识文档用 --- 分隔每一组问答，正好一问答 = 一个切片）
                 // 2. withIncludeCodeBlock(false)：不把代码块当文档内容
                 // 3. withIncludeBlockquote(false)：不把引用块当文档内容
-                // 4. withAdditionalMetadata：附加元信息（来源文件名），后续可用于过滤和溯源
+                // 4. withAdditionalMetadata：附加元信息（来源文件名 + 恋爱状态），后续可用于过滤和溯源
                 MarkdownDocumentReaderConfig config = MarkdownDocumentReaderConfig.builder()
                         .withHorizontalRuleCreateDocument(true)
                         .withIncludeCodeBlock(false)
                         .withIncludeBlockquote(false)
                         .withAdditionalMetadata("filename", fileName)
+                        .withAdditionalMetadata("status", status)
                         .build();
                 MarkdownDocumentReader reader = new MarkdownDocumentReader(resource, config);
                 allDocuments.addAll(reader.get());
@@ -60,5 +63,25 @@ class LoveAppDocumentLoader {
         }
         log.info("共加载文档切片数：{}", allDocuments.size());
         return allDocuments;
+    }
+
+    /**
+     * 根据文件名推断"恋爱状态"标签（元数据标注）
+     * love-qa-single → 单身；love-qa-dating → 恋爱；love-qa-married → 已婚
+     */
+    private String resolveStatus(String fileName) {
+        if (fileName == null) {
+            return "未知";
+        }
+        if (fileName.contains("single")) {
+            return "单身";
+        }
+        if (fileName.contains("dating")) {
+            return "恋爱";
+        }
+        if (fileName.contains("married")) {
+            return "已婚";
+        }
+        return "未知";
     }
 }

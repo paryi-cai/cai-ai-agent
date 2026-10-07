@@ -1,0 +1,22 @@
+{
+  "courses": [
+    {
+      "name": "脱单秘籍：从认识到确定关系",
+      "description": "帮助单身人群系统性提升社交与表达能力，从认识、吸引到确定关系的完整方法论。",
+      "features": ["社交圈拓展", "搭讪话术", "关系推进", "约会设计"],
+      "link": "https://www.codefather.cn"
+    },
+    {
+      "name": "高情商沟通技巧",
+      "description": "学会表达感受、处理冲突、构建健康边界，让亲密关系沟通更顺畅。",
+      "features": ["非暴力沟通", "冲突管理", "情绪识别"],
+      "link": "https://www.codefather.cn"
+    },
+    {
+      "name": "婚姻经营指南",
+      "description": "覆盖婚后亲密感维护、家务分工、财务规划等现实议题的实用指南。",
+      "features": ["亲密感维护", "家务协作", "家庭财务", "关系复盘"],
+      "link": "https://www.codefather.cn"
+    }
+  ]
+}

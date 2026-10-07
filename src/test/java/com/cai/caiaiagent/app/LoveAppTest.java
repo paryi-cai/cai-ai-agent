@@ -82,4 +82,39 @@ class LoveAppTest {
         String answer = loveApp.doChatWithRagCloud(message, chatId);
         Assertions.assertNotNull(answer);
     }
+
+    /**
+     * 元数据过滤检索：指定"已婚"状态，只从已婚篇文档中检索
+     */
+    @Test
+    void testChatWithRagByStatus() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "婚后总是因为家务分工吵架，怎么办？";
+        String answer = loveApp.doChatWithRagByStatus(message, chatId, "已婚");
+        Assertions.assertNotNull(answer);
+    }
+
+    /**
+     * 空上下文兜底：问一个与恋爱无关的问题，云知识库检索不到 → 输出自定义友好提示
+     */
+    @Test
+    void testChatWithRagCloudEmptyContext() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "怎么用 Java 实现快速排序？";
+        String answer = loveApp.doChatWithRagCloud(message, chatId);
+        Assertions.assertNotNull(answer);
+        Assertions.assertTrue(answer.contains("恋爱") || answer.contains("抱歉"),
+                "空上下文时应返回友好兜底话术，实际返回：" + answer);
+    }
+
+    /**
+     * QuestionAnswerAdvisor 动态过滤：运行时指定过滤表达式 status == '单身'
+     */
+    @Test
+    void testChatWithRagByFilter() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "怎么扩大社交圈？";
+        String answer = loveApp.doChatWithRagByFilter(message, chatId, "status == '单身'");
+        Assertions.assertNotNull(answer);
+    }
 }
