@@ -49,4 +49,10 @@ knife4j:
 love-app:
   rag:
     # 阿里云百炼云知识库名称（控制台创建时填的名字，代码按"名称"对接而不是 ID）
-    cloud-index-name: 恋爱大师问答                 # 文档界面使用中文
+    cloud-index-name: 恋爱大师问答
+
+# ==================== 工具调用配置 ====================
+search-api:
+  # SearchAPI 搜索服务 Key（https://www.searchapi.io/，为空时联网搜索工具会返回错误提示）
+  # 本地开发建议把真实 Key 写到 application-local.yml（该文件已 gitignore）
+  api-key: ${SEARCH_API_KEY:}                 # 文档界面使用中文

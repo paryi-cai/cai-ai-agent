@@ -123,6 +123,28 @@
             <version>5.6.2</version>
         </dependency>
 
+        <!-- Jsoup HTML 解析库：网页抓取工具用它解析网页内容 -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.19.1</version>
+        </dependency>
+
+        <!-- iText PDF 生成库（core 聚合包：kernel/layout 等） -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext-core</artifactId>
+            <version>9.1.0</version>
+            <type>pom</type>
+        </dependency>
+
+        <!-- iText 亚洲字体支持：生成含中文的 PDF 必需（提供 STSongStd-Light 等中文字体度量） -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>font-asian</artifactId>
+            <version>9.1.0</version>
+        </dependency>
+
         <!-- victools JSON Schema 生成器：结构化输出（entity()）底层用它生成 JSON Schema
              必须显式指定 4.37.0，与 Spring AI 1.0 的 jsonschema-module 版本对齐
              （不指定的话会解析到旧版 4.31.1，导致 NoClassDefFoundError） -->

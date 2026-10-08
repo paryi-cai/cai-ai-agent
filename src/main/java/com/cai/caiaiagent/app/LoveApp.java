@@ -15,6 +15,7 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +48,13 @@ public class LoveApp {
      */
     @Resource
     private Advisor loveAppRagCloudAdvisor;
+
+    /**
+     * 所有工具（由 ToolRegistration 统一注册）
+     * AI 会根据用户需求自主决定是否调用、调用哪个工具
+     */
+    @Resource
+    private ToolCallback[] allTools;
 
     /**
      * 系统提示词（System Prompt）：AI 应用的"灵魂"
@@ -180,6 +188,49 @@ public class LoveApp {
                         // 动态过滤表达式：作用在文档元数据上
                         .param(QuestionAnswerAdvisor.FILTER_EXPRESSION, filterExpression))
                 .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + 工具调用
+     * 把注册的所有工具交给 AI，让它自主决定何时调用（如搜索/抓取/下载/生成 PDF）
+     *
+     * @param message 用户需求
+     * @param chatId  会话 id（保留对话记忆）
+     * @return AI 的最终回答
+     */
+    public String doChatWithTools(String message, String chatId) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 绑定工具（1.0 写法：toolCallbacks 接收 ToolCallback 数组）
+                .toolCallbacks(allTools)
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + 工具调用 + 工具上下文（ToolContext）
+     * 演示给工具传递"不暴露给 AI"的内部参数（如登录用户信息、token、请求 ID）
+     *
+     * @param toolContext 内部上下文参数（不会发送给 AI 模型，只在程序内部使用）
+     */
+    public String doChatWithToolsByContext(String message, String chatId, Map<String, Object> toolContext) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .toolCallbacks(allTools)
+                // 工具上下文：随请求传入，工具内可读取，AI 不可见
+                .toolContext(toolContext)
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
