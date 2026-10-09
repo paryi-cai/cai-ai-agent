@@ -16,6 +16,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +56,13 @@ public class LoveApp {
      */
     @Resource
     private ToolCallback[] allTools;
+
+    /**
+     * MCP 客户端提供的工具（来自配置的 MCP 服务，如本地图片搜索服务）
+     * 由 Spring AI MCP 客户端自动配置注入
+     */
+    @Resource
+    private ToolCallbackProvider toolCallbackProvider;
 
     /**
      * 系统提示词（System Prompt）：AI 应用的"灵魂"
@@ -231,6 +239,26 @@ public class LoveApp {
                 .toolCallbacks(allTools)
                 // 工具上下文：随请求传入，工具内可读取，AI 不可见
                 .toolContext(toolContext)
+                .call()
+                .chatResponse();
+        String content = chatResponse.getResult().getOutput().getText();
+        log.info("content: {}", content);
+        return content;
+    }
+
+    /**
+     * 多轮对话 + MCP 服务调用
+     *
+     * MCP 调用的本质仍然是工具调用：把 MCP 服务提供的工具交给 AI，
+     * 由 AI 决定何时调用，客户端程序负责实际执行（stdio 模式下会拉起本地子进程运行服务）
+     */
+    public String doChatWithMcp(String message, String chatId) {
+        ChatResponse chatResponse = chatClient
+                .prompt()
+                .user(message)
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // 绑定 MCP 服务提供的所有工具（1.0 写法：toolCallbacks 接收 ToolCallbackProvider）
+                .toolCallbacks(toolCallbackProvider)
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();

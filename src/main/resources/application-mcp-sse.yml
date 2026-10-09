@@ -1,0 +1,17 @@
+# MCP SSE 连接模式（演示配置，第 7 章）
+# 与 stdio 的差别：MCP 服务以独立 HTTP 服务运行（需先启动服务端 sse profile），客户端通过 SSE 协议远程连接
+# 激活方式：以 local,mcp-sse 两个 profile 运行（如 run-test-sse.cmd），
+# 其中 mcp-sse 会用空配置覆盖默认的 stdio 配置，避免同时拉起本地子进程
+spring:
+  ai:
+    mcp:
+      client:
+        stdio:
+          # 空配置覆盖：SSE 模式下不需要 stdio
+          servers-configuration: classpath:mcp-servers-empty.json
+        sse:
+          connections:
+            # 连接名可自定义
+            yu-image-search-server:
+              url: http://localhost:8127   # MCP 服务端地址（服务端 sse profile）
+              sse-endpoint: /sse           # SSE 端点路径（与服务端配置一致）

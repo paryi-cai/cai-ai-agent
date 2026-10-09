@@ -1,0 +1,13 @@
+spring:
+  ai:
+    mcp:
+      server:
+        name: yu-image-search-mcp-server
+        version: 0.0.1
+        type: SYNC
+        # stdio 传输：通过标准输入输出流与客户端通信
+        stdio: true
+  main:
+    # stdio 模式下不需要启动 Web 服务
+    web-application-type: none
+    banner-mode: off

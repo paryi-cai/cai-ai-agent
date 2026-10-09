@@ -162,6 +162,12 @@
         -->
 
         <!-- Lombok：通过注解（如 @Data、@Slf4j）自动生成样板代码，仅在编译期生效 -->
+        <!-- MCP 客户端：让 AI 应用能够连接并使用 MCP 服务（教程第 7 章） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-starter-mcp-client</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

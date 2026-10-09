@@ -3,6 +3,8 @@ package com.cai.caiaiagent.app;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Map;
@@ -17,6 +19,10 @@ class LoveAppTest {
 
     @Resource
     private LoveApp loveApp;
+
+    /** MCP 客户端自动注入的工具提供者（聚合所有 MCP 服务提供的工具） */
+    @Resource
+    private ToolCallbackProvider toolCallbackProvider;
 
     /**
      * 多轮对话：验证对话记忆是否生效
@@ -150,7 +156,6 @@ class LoveAppTest {
         String chatId = UUID.randomUUID().toString();
         String message = "周末想带女朋友去上海约会，请联网搜索推荐几个适合情侣的小众打卡地？";
         String answer = loveApp.doChatWithTools(message, chatId);
-        System.out.println("最终回答：" + answer);
         Assertions.assertNotNull(answer);
     }
 
@@ -166,7 +171,6 @@ class LoveAppTest {
                 "userName", "鱼皮",
                 "loveStatus", "恋爱中");
         String answer = loveApp.doChatWithToolsByContext(message, chatId, toolContext);
-        System.out.println("最终回答：" + answer);
         Assertions.assertNotNull(answer);
         Assertions.assertTrue(answer.contains("鱼皮"), "回答应包含从 ToolContext 读取的用户信息，实际：" + answer);
     }
@@ -179,9 +183,56 @@ class LoveAppTest {
         String chatId = UUID.randomUUID().toString();
         String message = "请调用时间工具告诉我：现在是几点？今天几号？";
         String answer = loveApp.doChatWithTools(message, chatId);
-        System.out.println("最终回答：" + answer);
         Assertions.assertNotNull(answer);
         Assertions.assertTrue(answer.contains(String.valueOf(java.time.LocalDate.now().getYear())),
                 "回答应包含当前年份（说明用到了时间工具），实际：" + answer);
+    }
+
+    /**
+     * MCP 服务调用：AI 自主调用图片搜索 MCP 服务（本地 stdio 启动）
+     * 前置条件：已打包 yu-image-search-mcp-server 的 jar
+     */
+    @Test
+    void testChatWithMcp() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "帮我搜索一些哄另一半开心的图片";
+        String answer = loveApp.doChatWithMcp(message, chatId);
+        Assertions.assertNotNull(answer);
+    }
+
+    /**
+     * 查看当前加载的所有 MCP 工具（验证图片搜索 + 高德地图 MCP 均就绪）
+     * 仅验证工具发现，不调用 AI、不消耗 token、不需要 API Key
+     */
+    @Test
+    void testListMcpTools() {
+        ToolCallback[] toolCallbacks = toolCallbackProvider.getToolCallbacks();
+        StringBuilder sb = new StringBuilder("\n===== MCP 工具清单（共 " + toolCallbacks.length + " 个）=====\n");
+        for (ToolCallback toolCallback : toolCallbacks) {
+            sb.append("- ").append(toolCallback.getToolDefinition().name()).append("\n");
+        }
+        System.out.println(sb);
+        // 图片搜索 MCP 服务的工具（MCP 工具名会被 Spring AI 加前缀：spring_ai_mcp_client_{连接名}_{工具名}）
+        boolean hasImageSearch = java.util.Arrays.stream(toolCallbacks)
+                .anyMatch(tc -> tc.getToolDefinition().name().contains("searchImage"));
+        Assertions.assertTrue(hasImageSearch, "应加载图片搜索 MCP 服务的 searchImage 工具");
+        // 高德地图 MCP 服务的工具（原工具名以 maps_ 开头）
+        boolean hasAmap = java.util.Arrays.stream(toolCallbacks)
+                .anyMatch(tc -> tc.getToolDefinition().name().contains("maps_"));
+        Assertions.assertTrue(hasAmap, "应加载高德地图 MCP 服务的工具（maps_ 前缀）");
+    }
+
+    /**
+     * 高德地图 MCP：第 7 章原始需求场景（根据位置推荐约会地点）
+     * 前置条件：在 application-local.yml 配置有效的高德 API Key（或设置环境变量 AMAP_MAPS_API_KEY）
+     * 注意：Key 无效（占位符）时工具会返回 INVALID_USER_KEY 错误并导致本测试失败；
+     * 这也说明第三方 MCP 工具不做容错，使用前务必配置有效 Key
+     */
+    @Test
+    void testChatWithAmapMcp() {
+        String chatId = UUID.randomUUID().toString();
+        String message = "我的另一半居住在上海静安区，请帮我找到 5 公里内合适的约会地点";
+        String answer = loveApp.doChatWithMcp(message, chatId);
+        Assertions.assertNotNull(answer);
     }
 }

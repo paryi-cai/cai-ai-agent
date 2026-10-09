@@ -19,6 +19,11 @@ spring:
     #   chat:
     #     options:
     #       model: gemma3:1b      # 使用的小模型，体积小、对硬件要求低
+    # MCP 客户端：以 stdio 方式启动本地 MCP 服务（启动时自动拉起子进程）
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
 
 # ==================== Web 服务器配置 ====================
 server:

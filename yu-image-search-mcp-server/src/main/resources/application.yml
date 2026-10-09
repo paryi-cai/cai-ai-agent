@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: yu-image-search-mcp-server
+  profiles:
+    # 默认 stdio 模式（供 MCP 客户端作为子进程启动）
+    # 改为 sse 即以独立 HTTP 服务运行（供远程 MCP 客户端连接）
+    # local：加载 application-local.yml 中的本地密钥（该文件已 gitignore，不存在也不影响）
+    active: stdio,local
+
+server:
+  port: 8127
+
+# 图片搜索 API Key（SearchAPI：https://www.searchapi.io/）
+# 建议写到 application-local.yml（已 gitignore）或设置环境变量 IMAGE_SEARCH_API_KEY
+image-search:
+  api-key: ${IMAGE_SEARCH_API_KEY:}
