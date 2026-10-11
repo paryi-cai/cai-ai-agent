@@ -33,6 +33,8 @@ public class ToolRegistration {
         PDFGenerationTool pdfGenerationTool = new PDFGenerationTool();
         UserProfileTool userProfileTool = new UserProfileTool();
         TimeTool timeTool = new TimeTool();
+        // 任务终止工具：智能体判断任务完成后主动结束 Agent Loop
+        TerminateTool terminateTool = new TerminateTool();
         return ToolCallbacks.from(
                 fileOperationTool,
                 webSearchTool,
@@ -41,7 +43,8 @@ public class ToolRegistration {
                 terminalOperationTool,
                 pdfGenerationTool,
                 userProfileTool,
-                timeTool
+                timeTool,
+                terminateTool
         );
     }
 }
