@@ -70,8 +70,6 @@ cai-ai-agent/
 - Node.js（图片搜索 MCP 依赖 npx；前端开发需要）
 
 ### 1. 配置密钥
-创建 `src/main/resources/application-local.yml`（该文件已被 .gitignore 忽略，不会提交），参考 `application.yml` 注释填入：
-
 ```yaml
 spring:
   datasource:            # PostgreSQL（PGVector）连接信息
@@ -126,5 +124,4 @@ curl -N "http://localhost:8123/api/ai/food_app/chat/sse?message=hello&chatId=1"
 
 ## 说明
 
-- 仓库内不包含任何真实密钥：敏感配置均在 gitignore 的本地文件中
 - 本项目为个人学习实践项目
