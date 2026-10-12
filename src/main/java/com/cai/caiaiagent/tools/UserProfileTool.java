@@ -16,11 +16,11 @@ import org.springframework.ai.tool.annotation.Tool;
  */
 public class UserProfileTool {
 
-    @Tool(description = "Get the current logged-in user's own profile (name and love status)")
+    @Tool(description = "Get the current logged-in user's own profile (name and taste preference)")
     public String getMyProfile(ToolContext toolContext) {
         // 从内部上下文读取（这些值不会暴露给 AI 模型）
         Object userName = toolContext.getContext().get("userName");
-        Object loveStatus = toolContext.getContext().get("loveStatus");
-        return "当前登录用户：" + userName + "，恋爱状态：" + loveStatus;
+        Object tastePreference = toolContext.getContext().get("tastePreference");
+        return "当前登录用户：" + userName + "，口味偏好：" + tastePreference;
     }
 }

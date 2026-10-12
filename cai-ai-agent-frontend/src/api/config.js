@@ -7,8 +7,8 @@ export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replac
 
 /** 业务接口路径（与后端约定） */
 export const API_PATH = {
-  /** 恋爱大师：SSE 流式，GET ?message=xxx&chatId=xxx */
-  LOVE_APP_CHAT_SSE: '/ai/love_app/chat/sse',
+  /** 菜狗探店：SSE 流式，GET ?message=xxx&chatId=xxx */
+  FOOD_APP_CHAT_SSE: '/ai/food_app/chat/sse',
   /** 超级智能体：SSE 流式，GET ?message=xxx（无 chatId） */
   MANUS_CHAT: '/ai/manus/chat',
 }

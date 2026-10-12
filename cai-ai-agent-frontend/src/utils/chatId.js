@@ -3,7 +3,7 @@
  * 要求：进入页面后自动生成一个聊天室 id 用于区分会话。
  */
 
-/** 生成一个会话 ID，例如 love_1699999999999_a1b2c3d4 */
+/** 生成一个会话 ID，例如 food_1699999999999_a1b2c3d4 */
 export function generateChatId(prefix = 'chat') {
   const random = Math.random().toString(16).slice(2, 10)
   return `${prefix}_${Date.now()}_${random}`

@@ -2,7 +2,7 @@ package com.cai.caiaiagent.app;
 
 import com.cai.caiaiagent.advisor.MyLoggerAdvisor;
 import com.cai.caiaiagent.chatmemory.FileBasedChatMemory;
-import com.cai.caiaiagent.rag.LoveAppRagCustomAdvisorFactory;
+import com.cai.caiaiagent.rag.FoodAppRagCustomAdvisorFactory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -21,35 +21,37 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
- * AI 恋爱大师应用
+ * 菜狗探店 —— AI 美食探店博主应用（FoodApp）
  *
- * 核心设计（对应教程的方案设计部分）：
- * 1. 系统提示词：定义 AI 的"人设"——深耕恋爱心理的专家，会主动引导用户倾诉
+ * 核心设计：
+ * 1. 系统提示词：定义 AI 的"人设"——深耕深圳本地的美食探店博主，会主动引导用户说明场景和口味
  * 2. 多轮对话：通过 ChatClient + MessageChatMemoryAdvisor + ChatMemory 实现"记忆"
  */
 @Component
 @Slf4j
-public class LoveApp {
+public class FoodApp {
 
     private final ChatClient chatClient;
 
     /**
      * RAG 知识库向量存储
-     * 由 LoveAppVectorStoreConfig 创建：项目启动时自动加载 document/ 下的知识文档并向量化入库
+     * 由 FoodAppVectorStoreConfig 创建：项目启动时自动加载 document/ 下的深圳美食知识文档并向量化入库
      */
     @Resource
-    private VectorStore loveAppVectorStore;
+    private VectorStore foodAppVectorStore;
 
     /**
      * 云知识库检索增强 Advisor（阿里云百炼）
-     * 由 LoveAppRagCloudAdvisorConfig 创建，按 application.yml 的 cloud-index-name 对接云端知识库
+     * 由 FoodAppRagCloudAdvisorConfig 创建，按 application.yml 的 cloud-index-name 对接云端知识库
      */
     @Resource
-    private Advisor loveAppRagCloudAdvisor;
+    private Advisor foodAppRagCloudAdvisor;
 
     /**
      * 所有工具（由 ToolRegistration 统一注册）
@@ -59,7 +61,7 @@ public class LoveApp {
     private ToolCallback[] allTools;
 
     /**
-     * MCP 客户端提供的工具（来自配置的 MCP 服务，如本地图片搜索服务）
+     * MCP 客户端提供的工具（来自配置的 MCP 服务，如本地图片搜索、高德地图）
      * 由 Spring AI MCP 客户端自动配置注入
      */
     @Resource
@@ -70,12 +72,14 @@ public class LoveApp {
      * 决定了 AI 的角色定位、行为模式和交互风格
      */
     private static final String SYSTEM_PROMPT = """
-            扮演深耕恋爱心理领域的专家。开场向用户表明身份，告知用户可倾诉恋爱难题。
-            围绕单身、恋爱、已婚三种状态提问：单身状态询问社交圈拓展及追求心仪对象的困扰；
-            恋爱状态询问沟通、习惯差异引发的矛盾；已婚状态询问家庭责任与亲属关系处理的问题。
-            引导用户详述事情经过、对方反应及自身想法，以便给出专属解决方案。""";
+            你是"菜狗"，一位深耕深圳本地的美食探店博主。
+            开场向用户表明身份，告知用户可以咨询深圳吃喝玩乐和探店相关的问题。
+            围绕深圳各区（南山、福田、罗湖、宝安等）推荐餐厅、菜系和觅食路线：
+            用户找店时，结合区域、菜系、预算给出具体建议；
+            用户问菜品时，讲清楚特色、吃法和避雷点；
+            引导用户说明用餐场景（约会、聚餐、一人食）和口味偏好，以便给出专属探店建议。""";
 
-    public LoveApp(ChatModel dashscopeChatModel) {
+    public FoodApp(ChatModel dashscopeChatModel) {
         // 初始化基于文件持久化的对话记忆：对话会保存到项目根目录的 chat-memory/ 下，服务重启不丢失
         String fileDir = System.getProperty("user.dir") + "/chat-memory";
         ChatMemory chatMemory = new FileBasedChatMemory(fileDir);
@@ -134,7 +138,7 @@ public class LoveApp {
                 .user(message)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 // 应用知识库问答（1.0 写法：QuestionAnswerAdvisor.builder(...)）
-                .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
+                .advisors(QuestionAnswerAdvisor.builder(foodAppVectorStore).build())
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
@@ -152,7 +156,7 @@ public class LoveApp {
                 .user(message)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 // 应用云知识库检索增强 Advisor
-                .advisors(loveAppRagCloudAdvisor)
+                .advisors(foodAppRagCloudAdvisor)
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
@@ -161,15 +165,15 @@ public class LoveApp {
     }
 
     /**
-     * 多轮对话 + 按恋爱状态过滤的知识库问答
-     * 演示"元数据过滤检索"：只从指定状态（单身/恋爱/已婚）的文档里检索，
-     * 避免召回其他状态的无关内容，提升检索精度
+     * 多轮对话 + 按区域过滤的知识库问答
+     * 演示"元数据过滤检索"：只从指定区域（南山/福田/罗湖/宝安）的文档里检索，
+     * 避免召回其他区域的无关内容，提升检索精度
      *
-     * @param status 恋爱状态：单身 / 恋爱 / 已婚
+     * @param region 区域：南山 / 福田 / 罗湖 / 宝安
      */
-    public String doChatWithRagByStatus(String message, String chatId, String status) {
-        // 动态创建"带状态过滤"的 RAG Advisor（工厂模式）
-        Advisor ragCustomAdvisor = LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(loveAppVectorStore, status);
+    public String doChatWithRagByRegion(String message, String chatId, String region) {
+        // 动态创建"带区域过滤"的 RAG Advisor（工厂模式）
+        Advisor ragCustomAdvisor = FoodAppRagCustomAdvisorFactory.createFoodAppRagCustomAdvisor(foodAppVectorStore, region);
         ChatResponse chatResponse = chatClient
                 .prompt()
                 .user(message)
@@ -185,9 +189,9 @@ public class LoveApp {
     /**
      * 多轮对话 + 知识库问答（运行时动态指定元数据过滤条件）
      * 演示 QuestionAnswerAdvisor 的 FILTER_EXPRESSION 动态参数：
-     * 与 doChatWithRagByStatus 的区别是"过滤表达式在运行时传入"，适合动态筛选场景
+     * 与 doChatWithRagByRegion 的区别是"过滤表达式在运行时传入"，适合动态筛选场景
      *
-     * @param filterExpression 过滤表达式（语法类似 SQL，如 "status == '单身'"）
+     * @param filterExpression 过滤表达式（语法类似 SQL，如 "region == '南山'"）
      */
     public String doChatWithRagByFilter(String message, String chatId, String filterExpression) {
         ChatResponse chatResponse = chatClient
@@ -196,7 +200,7 @@ public class LoveApp {
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId)
                         // 动态过滤表达式：作用在文档元数据上
                         .param(QuestionAnswerAdvisor.FILTER_EXPRESSION, filterExpression))
-                .advisors(QuestionAnswerAdvisor.builder(loveAppVectorStore).build())
+                .advisors(QuestionAnswerAdvisor.builder(foodAppVectorStore).build())
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
@@ -268,30 +272,30 @@ public class LoveApp {
     }
 
     /**
-     * 恋爱报告（结构化输出的目标类型）
+     * 探店报告（结构化输出的目标类型）
      * 使用 Java record 快速定义不可变数据类，等价于写了 getter/构造器/equals 的普通类
      */
-    public record LoveReport(String title, List<String> suggestions) {
+    public record FoodReport(String title, List<String> suggestions) {
     }
 
     /**
      * 多轮对话 + 结构化输出
-     * entity(LoveReport.class) 会自动：
-     * 1. 调用前：把 LoveReport 转成 JSON Schema 格式指令附加到提示词，引导 AI 输出 JSON
-     * 2. 调用后：把 AI 返回的 JSON 文本反序列化成 LoveReport 对象
+     * entity(FoodReport.class) 会自动：
+     * 1. 调用前：把 FoodReport 转成 JSON Schema 格式指令附加到提示词，引导 AI 输出 JSON
+     * 2. 调用后：把 AI 返回的 JSON 文本反序列化成 FoodReport 对象
      *
-     * @return 恋爱报告对象（含标题和建议列表）
+     * @return 探店报告对象（含标题和建议列表）
      */
-    public LoveReport doChatWithReport(String message, String chatId) {
-        LoveReport loveReport = chatClient
+    public FoodReport doChatWithReport(String message, String chatId) {
+        FoodReport foodReport = chatClient
                 .prompt()
-                .system(SYSTEM_PROMPT + "每次对话后都要生成恋爱结果，标题为用户的恋爱报告，内容为建议列表")
+                .system(SYSTEM_PROMPT + "每次对话后都要生成探店结果，标题为用户的探店报告，内容为建议列表")
                 .user(message)
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .call()
-                .entity(LoveReport.class);
-        log.info("loveReport: {}", loveReport);
-        return loveReport;
+                .entity(FoodReport.class);
+        log.info("foodReport: {}", foodReport);
+        return foodReport;
     }
 
     /**
@@ -299,26 +303,56 @@ public class LoveApp {
      * 把带占位符的模板渲染成最终提示词，好处：提示词结构化、可维护、可复用
      *
      * @param name     用户昵称（替换模板中的 {name}）
-     * @param question 情感问题（替换模板中的 {question}）
+     * @param question 探店需求（替换模板中的 {question}）
      * @return AI 回复
      */
     public String doChatWithTemplate(String name, String question) {
         String templateText = """
                 用户昵称：{name}
-                情感问题：{question}
-                请先共情用户，再给出 3 条可执行的建议，语气温暖。""";
+                探店需求：{question}
+                请先回应用户的需求，再给出 3 条可执行的探店建议，语气活泼专业。""";
         // 创建模板并渲染：{name}、{question} 会被替换为真实值
         PromptTemplate promptTemplate = new PromptTemplate(templateText);
         String renderedPrompt = promptTemplate.render(Map.of("name", name, "question", question));
         return chatClient.prompt().user(renderedPrompt).call().content();
     }
 
+    /**
+     * 流式对话（打字机效果），供 SSE 主入口使用（全库检索）
+     */
     public Flux<String> doChatByStream(String message, String chatId) {
+        return doChatByStream(message, chatId, QuestionAnswerAdvisor.builder(foodAppVectorStore).build());
+    }
+
+    /**
+     * 流式对话（按区域过滤检索）：只检索指定区域的知识库内容（南山/福田/罗湖/宝安）
+     * 元数据过滤先于向量检索执行，避免召回其他区域的无关内容
+     */
+    public Flux<String> doChatByStreamByRegion(String message, String chatId, String region) {
+        return doChatByStream(message, chatId,
+                FoodAppRagCustomAdvisorFactory.createFoodAppRagCustomAdvisor(foodAppVectorStore, region));
+    }
+
+    /**
+     * 流式对话内部实现：对话记忆 + RAG 检索 Advisor（全库或按区域）+ 全量工具（本地 + MCP）
+     *
+     * 说明：工具在流式模式下同样可用；RAG 检索避免模型"凭训练记忆"编造店名地址
+     */
+    private Flux<String> doChatByStream(String message, String chatId, Advisor ragAdvisor) {
+        // 合并本地工具与 MCP 工具（高德地图/图片搜索），一次性绑定
+        ToolCallback[] mergedTools = Stream.concat(
+                        Arrays.stream(allTools),
+                        Arrays.stream(toolCallbackProvider.getToolCallbacks()))
+                .toArray(ToolCallback[]::new);
         return chatClient
                 .prompt()
                 .user(message)
-                // 给 Advisor 动态指定会话 id：告诉对话记忆 Advisor"这轮对话存到哪个房间"
+                // 对话记忆
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                // RAG 知识库检索（全库或按区域过滤）
+                .advisors(ragAdvisor)
+                // 工具调用：AI 自主决定是否调用（本地工具 + MCP 工具）
+                .toolCallbacks(mergedTools)
                 .stream()
                 .content();
     }

@@ -14,12 +14,12 @@ const router = useRouter()
 
 const apps = [
   {
-    name: 'AI 恋爱大师',
-    emoji: '💕',
-    desc: '知心大姐姐在线陪聊，解答恋爱困惑，支持多轮会话上下文。',
+    name: '菜狗探店',
+    emoji: '🍜',
+    desc: '深圳美食探店博主，推荐各区好店与觅食路线，支持多轮会话上下文。',
     points: ['SSE 流式输出', '实时打字机效果', 'chatId 区分会话'],
-    route: '/love',
-    gradient: 'linear-gradient(135deg, #ff7eb3, #ff758c 45%, #a855f7)',
+    route: '/food',
+    gradient: 'linear-gradient(135deg, #f97316, #f43f5e 55%, #facc15)',
   },
   {
     name: 'AI 超级智能体',
@@ -65,7 +65,7 @@ async function checkBackend() {
   backendMessage.value = '正在检测后端服务…'
   try {
     // 任意 HTTP 响应都说明服务已启动（404/405 也算连通），只看有没有网络层错误
-    await http.get(API_PATH.LOVE_APP_CHAT_SSE, { timeout: 4000, validateStatus: () => true })
+    await http.get(API_PATH.FOOD_APP_CHAT_SSE, { timeout: 4000, validateStatus: () => true })
     backendStatus.value = 'online'
     backendMessage.value = `后端服务在线 · ${API_BASE_URL}`
   } catch {
@@ -99,7 +99,7 @@ onMounted(checkBackend)
 
       <section class="hero">
         <h2>选择一个应用开始对话</h2>
-        <p>所有回复均为流式实时输出：恋爱大师逐字回复，超级智能体分步执行、一步一个气泡。</p>
+        <p>所有回复均为流式实时输出：菜狗探店逐字回复，超级智能体分步执行、一步一个气泡。</p>
       </section>
 
       <main class="cards">

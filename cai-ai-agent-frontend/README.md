@@ -10,22 +10,22 @@ AI 应用中心前端：一个主页用于切换两个应用，两个应用都�
 | 页面 | 路由 | 接口 | 说明 |
 | --- | --- | --- | --- |
 | 主页（切换应用） | `/#/` | — | 卡片式入口 + 后端连通状态检测 |
-| 页面 1：AI 恋爱大师 | `/#/love` | `GET /ai/love_app/chat/sse?message=xxx&chatId=xxx` | 进入页面自动生成聊天室 `chatId`，可在头部「新建会话」换新 id |
+| 页面 1：菜狗探店 | `/#/food` | `GET /ai/food_app/chat/sse?message=xxx&chatId=xxx` | 进入页面自动生成聊天室 `chatId`，可在头部「新建会话」换新 id |
 | 页面 2：AI 超级智能体 | `/#/manus` | `GET /ai/manus/chat?message=xxx` | 无 `chatId`，**每个 SSE 响应（＝一个步骤）单独一个气泡** |
 
 ## 界面预览
 
 桌面（1440×900）：
 
-| 主页 | AI 恋爱大师 | AI 超级智能体（执行中） | 执行完成 |
+| 主页 | 菜狗探店 | AI 超级智能体（执行中） | 执行完成 |
 | --- | --- | --- | --- |
-| ![主页](docs/screenshots/home.png) | ![恋爱大师](docs/screenshots/love-app.png) | ![执行中](docs/screenshots/manus-app.png) | ![完成](docs/screenshots/manus-app-done.png) |
+| ![主页](docs/screenshots/home.png) | ![菜狗探店](docs/screenshots/food-app.png) | ![执行中](docs/screenshots/manus-app.png) | ![完成](docs/screenshots/manus-app-done.png) |
 
 手机 / 平板（同一套代码，响应式适配）：
 
 | 手机主页（390×844） | 手机聊天（输入区常驻底部） | 平板智能体（768×1024） |
 | --- | --- | --- |
-| ![手机主页](docs/screenshots/phone-home.png) | ![手机聊天](docs/screenshots/phone-love.png) | ![平板智能体](docs/screenshots/tablet-manus.png) |
+| ![手机主页](docs/screenshots/phone-home.png) | ![手机聊天](docs/screenshots/phone-food.png) | ![平板智能体](docs/screenshots/tablet-manus.png) |
 
 （截图为 `mock/server.mjs` 回放真实抓包数据的联调效果）
 
@@ -71,7 +71,7 @@ VITE_API_BASE_URL=http://localhost:8123/api
 src/
 ├─ main.js                       # 入口
 ├─ App.vue                       # 根组件（路由出口 + 页面过渡）
-├─ router/index.js               # 路由：/ 主页、/love 恋爱大师、/manus 超级智能体
+├─ router/index.js               # 路由：/ 主页、/food 菜狗探店、/manus 超级智能体
 ├─ api/
 │  ├─ config.js                  # 接口前缀 API_BASE_URL + 接口路径常量
 │  └─ http.js                    # Axios 实例（普通请求用；SSE 不用 axios）
@@ -89,7 +89,7 @@ src/
 │  └─ AgentStepBubble.vue        # 步骤气泡：工具徽标 + 结构化结果 + 折叠/复制
 └─ views/
    ├─ HomeView.vue               # 主页：切换应用 + 能力说明
-   ├─ LoveAppView.vue            # 页面 1
+   ├─ FoodAppView.vue            # 页面 1
    └─ ManusAppView.vue           # 页面 2（step-mode）
 mock/
 ├─ server.mjs                    # 本地假后端：回放真实抓包数据（可选）
@@ -167,7 +167,7 @@ SSE 每收到一段先入队，再按 16ms 的节奏逐字吐出；积压越多�
 
 ### 5. 聊天室 id
 
-`src/utils/chatId.js`：进入页面时生成 `love_<时间戳>_<随机串>`，存入 `sessionStorage`
+`src/utils/chatId.js`：进入页面时生成 `food_<时间戳>_<随机串>`，存入 `sessionStorage`
 （同一次会话刷新不丢上下文，关闭标签页后重新生成）；点击「新建会话」会生成新的 id。
 
 ### 6. 交互细节
@@ -250,7 +250,7 @@ SSE 每收到一段先入队，再按 16ms 的节奏逐字吐出；积压越多�
 ### 6. 响应式自测
 
 在 5 种视口（320×568 / 390×844 / 844×390 横屏 / 768×1024 / 1440×900）下，对
-主页 + 恋爱大师 + 智能体（执行中 / 完成）逐页截图并做布局体检，检查三件事：
+主页 + 菜狗探店 + 智能体（执行中 / 完成）逐页截图并做布局体检，检查三件事：
 
 1. 页面是否出现横向溢出（`scrollWidth > clientWidth`）；
 2. 输入区是否始终落在视口内、消息区是否还有可用高度；

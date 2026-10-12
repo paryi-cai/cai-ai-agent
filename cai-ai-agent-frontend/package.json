@@ -2,7 +2,7 @@
   "name": "cai-ai-agent-frontend",
   "version": "1.0.0",
   "private": true,
-  "description": "AI 恋爱大师 + AI 超级智能体（Vue3 + Vite + EventSource SSE）",
+  "description": "菜狗探店 + AI 超级智能体（Vue3 + Vite + EventSource SSE）",
   "type": "module",
   "scripts": {
     "dev": "vite",

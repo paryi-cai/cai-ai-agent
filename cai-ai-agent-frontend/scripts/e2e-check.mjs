@@ -141,17 +141,40 @@ await page.evaluate(() => {
 await page.waitForTimeout(300)
 await shot('26-manus-top')
 
-// ---------- 恋爱大师回归 ----------
-console.log('\n=== 恋爱大师页面（普通模式回归）===')
-await openAndSend('#/love', '你好，我喜欢一个同事，但不敢表白')
+// ---------- 菜狗探店回归（普通模式 + 区域过滤） ----------
+console.log('\n=== 菜狗探店页面（普通模式回归）===')
+await openAndSend('#/food', '我在南山，想找适合约会拍照的餐厅')
 await page.waitForTimeout(1000)
-await shot('27-love-streaming')
+await shot('27-food-streaming')
 await page.waitForSelector(SEND, { timeout: 60000 })
 await page.waitForTimeout(500)
+const foodText = await page.locator('.bubble-ai').last().innerText()
 console.log('AI 气泡数（普通模式应为 1）:', await page.locator('.bubble-ai').count())
-console.log('内容长度:', (await page.locator('.bubble-ai').last().innerText()).length)
+console.log('内容长度:', foodText.length)
 console.log('是否误用步骤卡片:', (await page.locator('.step-card').count()) === 0 ? '否 ✓' : '是 ✗')
-await shot('28-love-done')
+await shot('28-food-done')
+
+// ---------- 区域过滤：选中南山后请求应带 region（中文需编码） ----------
+console.log('\n=== 区域过滤（region 参数）===')
+const regionRequests = []
+page.on('request', (r) => {
+  if (r.url().includes('/food_app/chat/sse')) regionRequests.push(r.url())
+})
+await page.click('.region-option:has-text("南山")')
+await page.waitForTimeout(200)
+console.log('激活的区域选项:', await page.locator('.region-option.active').innerText())
+await page.fill('textarea', '帮我找适合约会的餐厅')
+await page.waitForSelector(`${SEND}:not([disabled])`, { timeout: 20000 })
+await page.click(`${SEND}:not([disabled])`)
+await page.waitForSelector(SEND, { timeout: 60000 })
+const withRegion = regionRequests.filter((u) => u.includes('region='))
+console.log('带 region 的请求数:', withRegion.length)
+if (withRegion.length) {
+  console.log('中文已编码:', withRegion[0].includes('%E5%8D%97%E5%B1%B1') ? '是 ✓' : '否 ✗')
+  console.log('解码校验:', decodeURIComponent(withRegion[0].split('?')[1]).split('&').pop())
+}
+const regionPickDisabled = await page.locator('.region-option').first().isDisabled()
+console.log('流式结束后区域按钮可用:', regionPickDisabled ? '否 ✗' : '是 ✓')
 
 console.log('\n=== 页面错误 ===')
 console.log(errors.length ? errors.join('\n') : '无')

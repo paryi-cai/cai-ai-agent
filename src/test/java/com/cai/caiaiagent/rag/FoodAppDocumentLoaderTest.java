@@ -9,18 +9,18 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.util.List;
 
 /**
- * LoveAppDocumentLoader 单元测试
+ * FoodAppDocumentLoader 单元测试
  *
  * 特点：不启动 Spring 容器（手动 new），不调用 AI，纯本地验证切分逻辑 ✅ 快且免费
- * 作用：把"文档到底被切成什么样"打印出来，直观理解切分规则
+ * 作用：把"深圳美食文档到底被切成什么样"打印出来，直观理解切分规则
  */
-class LoveAppDocumentLoaderTest {
+class FoodAppDocumentLoaderTest {
 
     @Test
     @DisplayName("加载 Markdown 文档：验证切分数量、元数据、内容完整性")
     void testLoadMarkdowns() {
         // 手动构造（不依赖 Spring）：只需要传一个资源解析器
-        LoveAppDocumentLoader loader = new LoveAppDocumentLoader(new PathMatchingResourcePatternResolver());
+        FoodAppDocumentLoader loader = new FoodAppDocumentLoader(new PathMatchingResourcePatternResolver());
 
         List<Document> documents = loader.loadMarkdowns();
 
@@ -36,8 +36,8 @@ class LoveAppDocumentLoaderTest {
         }
 
         // ===== 断言（单元测试的核心：把预期固化成检查项） =====
-        // 1. 3 篇文档 × 5 组问答 = 15 个切片（每遇到一条 --- 水平线切一刀）
-        Assertions.assertEquals(15, documents.size(), "切片总数应为 15");
+        // 1. 6 篇文档 × 6 个切片 = 36 个切片（标题介绍 1 块 + 5 组问答，每组问答间用 --- 分隔）
+        Assertions.assertEquals(36, documents.size(), "切片总数应为 36");
 
         // 2. 每个切片都带 filename 元数据（为后续过滤/溯源做准备）
         Assertions.assertTrue(documents.stream().allMatch(d -> d.getMetadata().containsKey("filename")),
@@ -48,18 +48,18 @@ class LoveAppDocumentLoaderTest {
                 "不应出现空白切片");
 
         // 4. 单条问答的完整内容只出现在一个切片中（证明按 --- 正确切开了）
-        long count = documents.stream().filter(d -> d.getText().contains("激情期")).count();
-        Assertions.assertEquals(1, count, "已婚篇第 1 问应完整出现在且仅出现在一个切片里");
+        long count = documents.stream().filter(d -> d.getText().contains("白石洲")).count();
+        Assertions.assertEquals(1, count, "南山篇深夜食堂的'白石洲'内容应完整出现在且仅出现在一个切片里");
 
-        // 5. 每个切片都带恋爱状态标签，且"激情期"切片的状态是"已婚"（元数据标注验证）
-        Assertions.assertTrue(documents.stream().allMatch(d -> d.getMetadata().containsKey("status")),
-                "每个切片都应该有 status 元数据");
-        Object status = documents.stream()
-                .filter(d -> d.getText().contains("激情期"))
+        // 5. 每个切片都带区域标签，且"白石洲"切片的区域是"南山"（元数据标注验证）
+        Assertions.assertTrue(documents.stream().allMatch(d -> d.getMetadata().containsKey("region")),
+                "每个切片都应该有 region 元数据");
+        Object region = documents.stream()
+                .filter(d -> d.getText().contains("白石洲"))
                 .findFirst()
                 .orElseThrow()
                 .getMetadata()
-                .get("status");
-        Assertions.assertEquals("已婚", status, "已婚篇文档的 status 应为已婚");
+                .get("region");
+        Assertions.assertEquals("南山", region, "南山篇文档的 region 应为南山");
     }
 }

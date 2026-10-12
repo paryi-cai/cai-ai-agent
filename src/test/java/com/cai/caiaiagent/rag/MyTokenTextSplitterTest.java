@@ -18,8 +18,8 @@ class MyTokenTextSplitterTest {
     @Test
     @DisplayName("Token 切分：默认参数 vs 自定义参数 vs 激进参数")
     void testSplit() {
-        // 准备原始切片（15 个问答）
-        LoveAppDocumentLoader loader = new LoveAppDocumentLoader(new PathMatchingResourcePatternResolver());
+        // 准备原始切片（36 个美食知识切片）
+        FoodAppDocumentLoader loader = new FoodAppDocumentLoader(new PathMatchingResourcePatternResolver());
         List<Document> documents = loader.loadMarkdowns();
         MyTokenTextSplitter splitter = new MyTokenTextSplitter();
 

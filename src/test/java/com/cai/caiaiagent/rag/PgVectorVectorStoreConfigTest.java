@@ -20,7 +20,7 @@ import java.util.Map;
 @SpringBootTest
 class PgVectorVectorStoreConfigTest {
 
-    /** 按 Bean 名称注入 PGVector 版向量库（项目里同时存在内存版 loveAppVectorStore） */
+    /** 按 Bean 名称注入 PGVector 版向量库（项目里同时存在内存版 foodAppVectorStore） */
     @Resource(name = "pgVectorVectorStore")
     private VectorStore pgVectorVectorStore;
 

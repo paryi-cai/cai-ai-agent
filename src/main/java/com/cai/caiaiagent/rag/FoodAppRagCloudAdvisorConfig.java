@@ -21,22 +21,22 @@ import org.springframework.context.annotation.Configuration;
  * 对接流程：
  * 1. DashScopeDocumentRetriever：调用百炼知识库的检索接口（按知识库名称检索）
  * 2. RetrievalAugmentationAdvisor：把"检索 + 查询增强"封装成 Advisor（1.0 包名：org.springframework.ai.rag.advisor）
- * 3. LoveApp.doChatWithRagCloud() 挂载使用
+ * 3. FoodApp.doChatWithRagCloud() 挂载使用
  */
 @Configuration
 @Slf4j
-class LoveAppRagCloudAdvisorConfig {
+class FoodAppRagCloudAdvisorConfig {
 
     /** 复用配置里的百炼 API Key */
     @Value("${spring.ai.dashscope.api-key}")
     private String dashScopeApiKey;
 
-    /** 云知识库名称（application.yml 中 love-app.rag.cloud-index-name 配置） */
-    @Value("${love-app.rag.cloud-index-name}")
+    /** 云知识库名称（application.yml 中 food-app.rag.cloud-index-name 配置） */
+    @Value("${food-app.rag.cloud-index-name}")
     private String cloudIndexName;
 
     @Bean
-    public Advisor loveAppRagCloudAdvisor() {
+    public Advisor foodAppRagCloudAdvisor() {
         // 1.0 写法：DashScopeApi 从 new 改为 Builder 构建
         DashScopeApi dashScopeApi = DashScopeApi.builder()
                 .apiKey(dashScopeApiKey)
@@ -53,7 +53,7 @@ class LoveAppRagCloudAdvisorConfig {
         // 同时挂载自定义"空上下文增强器"：检索不到内容时输出友好兜底话术
         Advisor advisor = RetrievalAugmentationAdvisor.builder()
                 .documentRetriever(documentRetriever)
-                .queryAugmenter(LoveAppContextualQueryAugmenterFactory.createInstance())
+                .queryAugmenter(FoodAppContextualQueryAugmenterFactory.createInstance())
                 .build();
         log.info("云知识库 Advisor 初始化完成，知识库名称：{}", cloudIndexName);
         return advisor;

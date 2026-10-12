@@ -20,7 +20,7 @@ class MySummaryEnricherTest {
     @Test
     void testEnrichBySummary() {
         List<Document> documents = List.of(new Document(
-                "婚后感觉不如恋爱时亲密怎么办？建议每天 10 分钟专属聊天时间，每季度一次关系复盘。"));
+                "深圳探店时怎么判断一家店值不值得去？建议先看评分分布和差评类型，再看菜单是否聚焦、有没有明确的招牌菜。"));
         List<Document> enriched = mySummaryEnricher.enrichBySummary(documents);
 
         enriched.forEach(doc -> System.out.println("增强后 metadata：" + doc.getMetadata()));

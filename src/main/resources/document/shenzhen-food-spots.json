@@ -1,0 +1,40 @@
+{
+  "foodSpots": [
+    {
+      "name": "南山·海岸城美食圈",
+      "description": "南山区人气商圈，连锁品牌与网红餐厅密集，从甜品咖啡到正餐全覆盖，适合逛街顺路觅食。",
+      "features": ["网红餐厅", "甜品咖啡", "聚会首选"],
+      "link": "https://www.dianping.com/shenzhen"
+    },
+    {
+      "name": "福田·水围村夜市",
+      "description": "福田区城中村美食代表，潮汕打冷、烧烤和大排档云集，凌晨依然热闹，是深圳知名宵夜据点。",
+      "features": ["潮汕打冷", "烧烤", "深夜食堂"],
+      "link": "https://www.dianping.com/shenzhen"
+    },
+    {
+      "name": "罗湖·乐园路海鲜街",
+      "description": "深圳老牌海鲜街，经典玩法是现买现做：街边挑鲜活海产，相邻餐厅按做法收加工费。",
+      "features": ["现买现做", "海鲜加工", "老字号"],
+      "link": "https://www.dianping.com/shenzhen"
+    },
+    {
+      "name": "罗湖·东门老街小吃",
+      "description": "深圳最老的商业区，聚集广式肠粉、云吞面、烧腊和传统糖水等老字号小吃，人均20-40元。",
+      "features": ["老字号小吃", "肠粉", "糖水铺"],
+      "link": "https://www.dianping.com/shenzhen"
+    },
+    {
+      "name": "南山·蛇口海上世界",
+      "description": "深圳海景餐饮地标，异国料理与景观餐厅集中，落日时段氛围最佳，适合约会打卡。",
+      "features": ["海景餐厅", "异国料理", "约会圣地"],
+      "link": "https://www.dianping.com/shenzhen"
+    },
+    {
+      "name": "宝安·西乡步行街",
+      "description": "宝安平价美食聚集地，潮汕粉面、湘菜小炒和烧烤密度极高，人均20-40元吃到满足。",
+      "features": ["平价美食", "烟火气", "全时段"],
+      "link": "https://www.dianping.com/shenzhen"
+    }
+  ]
+}

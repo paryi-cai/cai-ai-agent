@@ -1,12 +1,14 @@
 /**
  * 本地联调用的假后端（仅用于开发自测，不参与构建）
  *
- * 模拟 Spring Boot 的 SSE 接口；其中 /api/ai/manus/chat 用真实抓包数据回放：
- *   每次 SSE 响应 = 智能体的一个步骤（Step N: ...，带 BOM），流结束时没有 [DONE]。
- *   数据来源：mock/realEvents.json（从真实后端 /api/ai/manus/chat 抓取）
+ * 模拟 Spring Boot 的两个 SSE 接口：
+ *   - GET /api/ai/food_app/chat/sse?message=xxx&chatId=xxx[&region=南山]   菜狗探店（本地知识库问答）
+ *   - GET /api/ai/manus/chat?message=xxx                                   超级智能体（分步推送）
+ * 其中 manus 用真实抓包数据回放：每次 SSE 响应 = 一个步骤（Step N: ...，带 BOM），流结束无 [DONE]。
+ * 数据来源：mock/realEvents.json（从真实后端 /api/ai/manus/chat 抓取）
  *
  * 运行：node mock/server.mjs   （默认 8123 端口，可用 PORT 覆盖）
- * 参数：DELAY=800 控制每个步骤之间的间隔毫秒数
+ * 参数：DELAY=800 控制 manus 每个步骤之间的间隔毫秒数
  */
 import { readFileSync } from 'node:fs'
 import http from 'node:http'
@@ -44,13 +46,26 @@ const FINAL_ANSWER = `\uFEFFStep 9: 已为你生成《上海浪漫约会计划�
 
 > 文件已生成：\`shanghai_romantic_date_plan.txt\``
 
-const LOVE_REPLY =
-  '别着急，感情里的事我们慢慢聊：\n\n' +
-  '1. 先说说你们相处多久了？\n' +
-  '2. 最近一次让你不舒服的具体场景是什么？\n\n' +
-  '> 记住：先照顾好自己的感受。'
+/** 菜狗探店：按区域给出"像知识库"的回复，方便验证区域过滤参数是否生效 */
+const REGION_REPLY = {
+  南山:
+    '海岸城和万象天地适合逛街顺路觅食，蛇口海上世界傍晚的海景餐厅氛围最好。\n\n' +
+    '科技园上班族午餐推荐错峰（11:30 前或 13:15 后）。',
+  福田:
+    '福田早茶去 CBD 老牌茶楼，车公庙和华强北适合工作日快餐，晚上可以逛福田夜市。',
+  罗湖:
+    '东门老街老字号密集，乐园路海鲜街的经典玩法是"市场买 + 加工店做"。',
+  宝安:
+    '宝安中心区（壹方城）适合逛吃，西乡和固戍藏着不少平价小店，宵夜去大排档。',
+  通用:
+    '先明确三件事：在哪个区、想吃什么菜系、人均预算多少，我再给你更精准的推荐。',
+}
 
-async function stream(res, parts, { chunkSize = 4, delay = 45 } = {}) {
+/** 菜狗探店：未指定区域时的通用回复 */
+const FOOD_REPLY =
+  '想吃点啥？告诉我你在深圳哪个区、想吃什么菜系、什么场景（约会/聚餐/一人食），我来帮你挑店。'
+
+async function stream(res, parts, { delay = 45 } = {}) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache, no-transform',
@@ -59,7 +74,7 @@ async function stream(res, parts, { chunkSize = 4, delay = 45 } = {}) {
   })
 
   for (const part of parts) {
-    // 一个 part = 一个步骤 = 一次 SSE 响应（data 内部换行需要拆成多行 data:）
+    // 一个 part = 一次 SSE 响应（data 内部换行需要拆成多行 data:）
     const payload = String(part)
       .split('\n')
       .map((line) => `data:${line}`)
@@ -75,14 +90,20 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`)
   const message = url.searchParams.get('message') || ''
   const chatId = url.searchParams.get('chatId') || '(无)'
+  const region = url.searchParams.get('region') || '(全库)'
 
-  console.log(`[mock] ${req.method} ${url.pathname} message=${JSON.stringify(message)} chatId=${chatId}`)
+  console.log(
+    `[mock] ${req.method} ${url.pathname} message=${JSON.stringify(message)} chatId=${chatId} region=${region}`,
+  )
 
-  if (url.pathname === '/api/ai/love_app/chat/sse') {
-    const reply = `收到你的消息：**${message}**（chatId：${chatId}）\n\n${LOVE_REPLY}`
-    return stream(res, chunk(reply, 4), { delay: 60 })
+  // 菜狗探店（SSE 流式）
+  if (url.pathname === '/api/ai/food_app/chat/sse') {
+    const body = REGION_REPLY[region] || FOOD_REPLY
+    const reply = `收到：**${message}**\n检索范围：${region}\n\n${body}`
+    return stream(res, chunk(reply, 4), { delay: 45 })
   }
 
+  // 超级智能体（分步推送）
   if (url.pathname === '/api/ai/manus/chat') {
     return stream(res, [...MANUS_STEPS, FINAL_ANSWER], { delay: STEP_DELAY })
   }
@@ -93,8 +114,8 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`[mock] 假后端已启动：http://localhost:${PORT}/api`)
+  console.log(`[mock] 菜狗探店：/api/ai/food_app/chat/sse（支持 region=南山/福田/罗湖/宝安）`)
   console.log(
-    `[mock] manus 回放 ${MANUS_STEPS.length} 个真实步骤 + 1 段最终答复，每步间隔 ${STEP_DELAY}ms`,
+    `[mock] 智能体：/api/ai/manus/chat 回放 ${MANUS_STEPS.length} 个真实步骤 + 1 段最终答复，每步间隔 ${STEP_DELAY}ms`,
   )
 })
-

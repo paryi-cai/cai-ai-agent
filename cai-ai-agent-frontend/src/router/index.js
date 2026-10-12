@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 import HomeView from '@/views/HomeView.vue'
-import LoveAppView from '@/views/LoveAppView.vue'
+import FoodAppView from '@/views/FoodAppView.vue'
 import ManusAppView from '@/views/ManusAppView.vue'
 
 const routes = [
@@ -12,11 +12,11 @@ const routes = [
     meta: { title: 'AI 应用中心' },
   },
   {
-    // 页面 1：AI 恋爱大师
-    path: '/love',
-    name: 'love',
-    component: LoveAppView,
-    meta: { title: 'AI 恋爱大师' },
+    // 页面 1：菜狗探店（AI 美食探店博主）
+    path: '/food',
+    name: 'food',
+    component: FoodAppView,
+    meta: { title: '菜狗探店' },
   },
   {
     // 页面 2：AI 超级智能体

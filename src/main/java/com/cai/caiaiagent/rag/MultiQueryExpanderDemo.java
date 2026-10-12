@@ -35,7 +35,7 @@ public class MultiQueryExpanderDemo {
     private final MultiQueryExpander queryExpander;
 
     @Resource
-    private VectorStore loveAppVectorStore;
+    private VectorStore foodAppVectorStore;
 
     public MultiQueryExpanderDemo(ChatModel dashscopeChatModel) {
         // 构建扩展器：numberOfQueries(3) 表示扩展出 3 个变体（默认还会包含原始查询）
@@ -62,7 +62,7 @@ public class MultiQueryExpanderDemo {
         // 2. 每个变体分别检索（记录 Query -> 检索结果，供合并器使用）
         Map<Query, List<List<Document>>> documentsForQuery = new LinkedHashMap<>();
         for (Query query : queries) {
-            List<Document> docs = loveAppVectorStore.similaritySearch(
+            List<Document> docs = foodAppVectorStore.similaritySearch(
                     SearchRequest.builder().query(query.text()).topK(3).build());
             documentsForQuery.put(query, List.of(docs));
         }

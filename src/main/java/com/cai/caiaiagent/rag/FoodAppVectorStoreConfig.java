@@ -24,24 +24,24 @@ import java.util.List;
  * 生产环境可以换成 PGVector、Milvus、Redis 等（VectorStore 接口不变，只换实现）
  */
 @Configuration
-public class LoveAppVectorStoreConfig {
+public class FoodAppVectorStoreConfig {
 
     @Resource
-    private LoveAppDocumentLoader loveAppDocumentLoader;
+    private FoodAppDocumentLoader foodAppDocumentLoader;
 
     /**
-     * 初始化恋爱大师向量库：项目启动时自动加载文档并向量化入库
+     * 初始化菜狗探店向量库：项目启动时自动加载文档并向量化入库
      *
      * @param dashscopeEmbeddingModel Spring AI Alibaba 自动配置的通义千问嵌入模型
      */
     @Bean
-    VectorStore loveAppVectorStore(EmbeddingModel dashscopeEmbeddingModel, BatchingStrategy batchingStrategy) {
+    VectorStore foodAppVectorStore(EmbeddingModel dashscopeEmbeddingModel, BatchingStrategy batchingStrategy) {
         // 构建内存向量库（Builder 模式，1.0 版本的写法），接入自定义批处理策略
         SimpleVectorStore simpleVectorStore = SimpleVectorStore.builder(dashscopeEmbeddingModel)
                 .batchingStrategy(batchingStrategy)
                 .build();
         // 加载文档：add() 内部会先调用 Embedding 模型把每个文档块转成向量，再存入向量库
-        List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+        List<Document> documents = foodAppDocumentLoader.loadMarkdowns();
         simpleVectorStore.add(documents);
         return simpleVectorStore;
     }

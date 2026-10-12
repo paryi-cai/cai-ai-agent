@@ -16,11 +16,11 @@ const props = defineProps({
   subtitle: { type: String, default: '' },
   /** 顶部图标 / emoji */
   emoji: { type: String, default: '🤖' },
-  /** SSE 接口路径，如 /ai/love_app/chat/sse */
+  /** SSE 接口路径，如 /ai/food_app/chat/sse */
   endpoint: { type: String, required: true },
   /**
    * 当前会话的聊天室 id。
-   * 恋爱大师需要传 chatId；超级智能体没有 chatId，传空字符串即可。
+   * 菜狗探店需要传 chatId；超级智能体没有 chatId，传空字符串即可。
    */
   chatId: { type: String, default: '' },
   /** 输入框占位提示 */
@@ -32,9 +32,17 @@ const props = defineProps({
    * 并额外提供“展开推理过程 / 精简输出”的切换。
    */
   stepMode: { type: Boolean, default: false },
+  /**
+   * 当前检索区域（'' = 全库检索）；仅支持区域过滤的应用传值
+   */
+  region: { type: String, default: '' },
+  /**
+   * 区域选项列表 [{ label, value }]；为空则不显示区域选择器
+   */
+  regionOptions: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['reset-chat-id'])
+const emit = defineEmits(['reset-chat-id', 'update:region'])
 
 /**
  * 标记组件已挂载完成。
@@ -96,6 +104,21 @@ function typewriterOf(message) {
     typewriterPool.set(message.id, typewriter)
   }
   return typewriter
+}
+
+/**
+ * 让某个气泡按打字机效果显示指定文本
+ * 统一入口：把“完整文本”交给打字机，已显示的部分不会重复吐，也不会被切错。
+ */
+function typeSpeech(message, text) {
+  if (!message) return
+  typewriterOf(message).updateSource(text)
+}
+
+/** 立刻显示完整内容（不再逐字动画） */
+function revealSpeech(message, text) {
+  if (!message) return
+  typewriterOf(message).revealAll(text)
 }
 
 /** 关闭并移除某个气泡的打字机 */
@@ -164,8 +187,8 @@ function createAiMessage(text = '', stepNo = null) {
   const message = activeMessage.value
   if (message && text) {
     message.fullText = text
-    // 交给该气泡自己的打字机逐字播放（existing 传空串，保证从 0 开始吐）
-    typewriterOf(message).push(text, '')
+    // 交给该气泡自己的打字机逐字播放
+    typeSpeech(message, text)
   }
   return message
 }
@@ -220,17 +243,18 @@ function handleAgentChunk(chunk) {
     target.fullText = lastPart.text
 
     /*
-     * 只把“当前步骤里新增的部分”交给打字机：
-     * - 如果新文本是气泡已有文本的延续，就只吐出多出来的那一截；
-     *   否则（新气泡 / 编号补全导致文本重排）整段重放，并重新从 0 开始吐字。
+     * 把该步骤的完整文本交给打字机：
+     * 已显示的字符不会重复吐；文本被替换（编号补全等）时自动从新文本继续。
      */
     const shown = target.content || ''
     if (lastPart.text === shown) {
       // 内容没变，无需重放
     } else if (lastPart.text.startsWith(shown)) {
-      typewriterOf(target).push(lastPart.text.slice(shown.length), shown)
+      typeSpeech(target, lastPart.text)
     } else {
-      typewriterOf(target).push(lastPart.text, '')
+      // 文本被替换（不是延续）→ 从头重放
+      typewriterOf(target).reset()
+      typeSpeech(target, lastPart.text)
     }
   }
 
@@ -293,8 +317,9 @@ function handlePlainChunk(chunk) {
     createAiMessage(chunk)
     return
   }
+  // 累积完整文本，再交给打字机（由它决定从哪继续吐）
   current.fullText = `${current.fullText || ''}${chunk}`
-  typewriterOf(current).push(chunk, current.content)
+  typeSpeech(current, current.fullText)
 }
 
 /** 发送消息 */
@@ -318,6 +343,8 @@ function handleSend() {
   // 关键：查询参数必须 encodeURIComponent（中文、emoji、& 等都要安全），sse.js 里已统一处理
   const params = { message: text }
   if (props.chatId) params.chatId = props.chatId
+  // 区域过滤：选择具体区域时，后端只检索该区域的知识库内容
+  if (props.region) params.region = props.region
 
   connection = createSseConnection({
     path: props.endpoint,
@@ -362,14 +389,14 @@ function finishStreaming() {
 
   const message = activeMessage.value
   if (message) {
-    const typewriter = typewriterPool.get(message.id)
-    if (typewriter) typewriter.flush()
     message.status = 'done'
-    if (!message.content) {
+    if (!message.fullText) {
+      // 完全没有返回内容
       applyText(message, '（本次没有返回内容）')
     } else {
-      // 流式结束后按完整 Markdown 重新解析一次，避免半截语法残留
-      applyText(message, message.content)
+      // 收尾：直接把完整文本一次性落定（不再等打字机），避免最后几个字卡住
+      revealSpeech(message, message.fullText)
+      applyText(message, message.fullText)
     }
     disposeTypewriter(message)
   }
@@ -395,7 +422,7 @@ function handleClear() {
   typewriterPool.clear()
 }
 
-/** 新建会话：重新生成聊天室 id（仅恋爱大师这类需要 chatId 的应用） */
+/** 新建会话：重新生成聊天室 id（仅菜狗探店这类需要 chatId 的应用） */
 function handleNewChat() {
   handleClear()
   emit('reset-chat-id')
@@ -435,6 +462,20 @@ onBeforeUnmount(() => {
       </AppHeader>
 
       <div class="chat-toolbar toolbar">
+        <div v-if="regionOptions.length" class="region-picker" role="group" aria-label="知识库检索范围">
+          <span class="region-label">检索范围</span>
+          <button
+            v-for="option in regionOptions"
+            :key="option.value || 'all'"
+            type="button"
+            class="chip region-option"
+            :class="{ active: region === option.value }"
+            :disabled="streaming"
+            @click="emit('update:region', option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
         <span v-if="stepMode" class="chip">智能体分步执行 · 一步一个气泡</span>
         <label v-if="stepMode" class="switch toolbar-end" :title="compact ? '展开每个步骤的详细结果' : '只看工具名与摘要'">
           <input v-model="compact" type="checkbox" />
@@ -561,6 +602,32 @@ onBeforeUnmount(() => {
 .chat-toolbar {
   flex: none;
   min-height: 0;
+}
+
+/* ---------------- 区域选择器（知识库检索范围） ---------------- */
+.region-picker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.region-label {
+  margin-right: 2px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.region-option {
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--t-fast), color var(--t-fast), opacity var(--t-fast);
+}
+.region-option.active {
+  background: var(--brand);
+  color: #fff;
+}
+.region-option:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* ---------------- 消息区 ---------------- */

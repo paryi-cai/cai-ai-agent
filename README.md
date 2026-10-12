@@ -4,15 +4,16 @@
 
 ## 功能特性
 
-### AI 恋爱大师（LoveApp）
+### 菜狗探店（FoodApp）
+- AI 美食探店博主人设：深圳各区好店推荐、菜系讲解、避雷指南
 - 多轮对话与对话记忆（内存 / 文件持久化）
-- 结构化输出（AI 回答自动转换为对象）
+- 结构化输出（AI 回答自动转换为探店报告对象）
 - Prompt 模板与自定义 Advisor（日志、重读增强）
 
 ### RAG 知识库
-- 本地知识库：文档加载、切片、向量化（PostgreSQL + PGVector）
+- 本地知识库：深圳美食文档加载、切片、向量化（PostgreSQL + PGVector）
 - 云知识库：阿里云百炼云知识库对接
-- 检索增强：查询重写 / 翻译 / 压缩 / 多查询扩展、元数据过滤、空上下文兜底
+- 检索增强：查询重写 / 翻译 / 压缩 / 多查询扩展、**区域元数据过滤**、空上下文兜底
 
 ### 工具调用
 文件操作、联网搜索、网页抓取、终端操作、资源下载、PDF 生成、用户档案查询、时间工具、任务终止工具（AI 自主决策调用）
@@ -48,12 +49,12 @@ ReAct 模式 + 手动工具调用循环：自主规划、多步执行复杂任�
 cai-ai-agent/
 ├── src/main/java/com/cai/caiaiagent/
 │   ├── agent/            # AI 智能体（BaseAgent / ReActAgent / ToolCallAgent / CaiManus）
-│   ├── app/              # 核心应用（LoveApp、AiController）
+│   ├── app/              # 核心应用（FoodApp 菜狗探店、AiController）
 │   ├── advisor/          # 自定义 Advisor
 │   ├── chatmemory/       # 对话记忆（文件持久化）
 │   ├── config/           # 全局配置（跨域等）
 │   ├── controller/       # 接口层（AiController / HealthController）
-│   ├── rag/              # RAG 知识库相关
+│   ├── rag/              # RAG 知识库（深圳美食文档加载 / 检索增强）
 │   ├── tools/            # 工具集（9 个工具 + 工具注册）
 │   └── demo/             # 各章节示例代码
 ├── cai-image-search-mcp-server/   # 图片搜索 MCP 服务（独立模块）
@@ -108,14 +109,14 @@ npm run dev
 
 | 路径（含 /api 前缀） | 说明 |
 |---|---|
-| GET /api/ai/love_app/chat/sync | 恋爱大师 · 同步对话（完整返回） |
-| GET /api/ai/love_app/chat/sse | 恋爱大师 · SSE 流式（打字机效果） |
+| GET /api/ai/food_app/chat/sync | 菜狗探店 · 同步对话（完整返回） |
+| GET /api/ai/food_app/chat/sse | 菜狗探店 · SSE 流式（打字机效果） |
 | GET /api/ai/manus/chat | AI 智能体 · SSE 分步流式 |
 
 流式接口测试示例：
 
 ```bash
-curl -N "http://localhost:8123/api/ai/love_app/chat/sse?message=hello&chatId=1"
+curl -N "http://localhost:8123/api/ai/food_app/chat/sse?message=hello&chatId=1"
 ```
 
 ## 部署

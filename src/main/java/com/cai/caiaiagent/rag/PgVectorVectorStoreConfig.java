@@ -37,7 +37,7 @@ import java.util.List;
 public class PgVectorVectorStoreConfig {
 
     @Resource
-    private LoveAppDocumentLoader loveAppDocumentLoader;
+    private FoodAppDocumentLoader foodAppDocumentLoader;
 
     /**
      * PGVector 向量存储 Bean
@@ -71,7 +71,7 @@ public class PgVectorVectorStoreConfig {
             if (count != null && count > 0) {
                 return;
             }
-            List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
+            List<Document> documents = foodAppDocumentLoader.loadMarkdowns();
             // DashScope Embedding API 限制单次批量 ≤ 10 条，分批写入
             int batchSize = 10;
             for (int i = 0; i < documents.size(); i += batchSize) {

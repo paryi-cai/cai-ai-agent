@@ -14,7 +14,7 @@ const DONE_FLAG = '[DONE]'
  * - 不再需要时务必调用 close()，否则连接会一直挂着
  *
  * @param {object} options
- * @param {string} options.path 接口路径，如 /ai/love_app/chat/sse
+ * @param {string} options.path 接口路径，如 /ai/food_app/chat/sse
  * @param {object} [options.params] 查询参数，会自动 encodeURIComponent
  * @param {(text: string) => void} [options.onMessage] 收到一段内容
  * @param {() => void} [options.onDone] 服务端正常结束

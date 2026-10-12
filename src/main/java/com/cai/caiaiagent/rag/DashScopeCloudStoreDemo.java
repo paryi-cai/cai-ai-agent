@@ -26,7 +26,7 @@ public class DashScopeCloudStoreDemo {
     private final DashScopeCloudStore cloudStore;
 
     public DashScopeCloudStoreDemo(@Value("${spring.ai.dashscope.api-key}") String apiKey,
-                                   @Value("${love-app.rag.cloud-index-name}") String indexName) {
+                                   @Value("${food-app.rag.cloud-index-name}") String indexName) {
         DashScopeApi dashScopeApi = DashScopeApi.builder()
                 .apiKey(apiKey)
                 .build();
