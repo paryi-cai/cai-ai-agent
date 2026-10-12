@@ -19,6 +19,7 @@ import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Map;
@@ -310,5 +311,15 @@ public class LoveApp {
         PromptTemplate promptTemplate = new PromptTemplate(templateText);
         String renderedPrompt = promptTemplate.render(Map.of("name", name, "question", question));
         return chatClient.prompt().user(renderedPrompt).call().content();
+    }
+
+    public Flux<String> doChatByStream(String message, String chatId) {
+        return chatClient
+                .prompt()
+                .user(message)
+                // 给 Advisor 动态指定会话 id：告诉对话记忆 Advisor"这轮对话存到哪个房间"
+                .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, chatId))
+                .stream()
+                .content();
     }
 }

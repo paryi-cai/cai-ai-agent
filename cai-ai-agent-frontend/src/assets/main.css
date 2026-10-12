@@ -1,0 +1,559 @@
+/* ==========================================================================
+   1. 设计令牌（全站统一：颜色 / 圆角 / 阴影 / 间距 / 层级 / 动效）
+   ========================================================================== */
+:root {
+  /* 颜色 */
+  --bg: #eef1f8;
+  --bg-soft: #f6f8fd;
+  --panel: #ffffff;
+  --panel-2: #f8f9ff;
+  --border: #e3e6f0;
+  --border-strong: #d2d7e6;
+  --text: #1f2430;
+  --text-2: #5b6478;
+  --text-3: #98a1b6;
+  --brand: #4f6ef7;
+  --brand-2: #8b5cf6;
+  --brand-soft: #eef1ff;
+  --brand-ink: #2f49c9;
+  --success: #16a34a;
+  --success-soft: #e9f9ef;
+  --danger: #ef4444;
+  --danger-soft: #fdf0f0;
+  --warning: #f59e0b;
+  --link: #1d4ed8;
+  --brand-gradient: linear-gradient(135deg, var(--brand), var(--brand-2));
+
+  /* 渐变光斑（主页背景） */
+  --glow-a: rgba(79, 110, 247, 0.45);
+  --glow-b: rgba(168, 85, 247, 0.4);
+
+  /* 圆角 */
+  --r-xs: 8px;
+  --r-sm: 10px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-full: 999px;
+
+  /* 阴影 */
+  --shadow-sm: 0 6px 18px rgba(31, 36, 48, 0.06);
+  --shadow: 0 18px 40px rgba(31, 36, 48, 0.08);
+  --shadow-lg: 0 26px 50px rgba(31, 36, 48, 0.14);
+
+  /* 间距节奏 */
+  --gap-xs: 6px;
+  --gap-sm: 10px;
+  --gap: 14px;
+  --gap-lg: 20px;
+
+  /* 层级 */
+  --z-header: 20;
+  --z-glow: 0;
+
+  /* 尺寸：页面内容统一最大宽度 */
+  --header-h: auto;
+  --wide: 1080px;
+  --measure: 460px;
+
+  /* 字体 */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  /* 动效 */
+  --t-fast: 0.16s ease;
+  --t-base: 0.22s ease;
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   2. 基础重置
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+html {
+  /* 防止 iOS 旋转屏幕时自动放大字号 */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+/* 键盘可达性：统一聚焦样式 */
+:where(button, a, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* 滚动条（桌面） */
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(31, 36, 48, 0.16);
+    border-radius: var(--r-full);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(31, 36, 48, 0.28);
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* 触屏设备隐藏滚动条，避免占位跳动 */
+@media (pointer: coarse) {
+  * {
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+/* ==========================================================================
+   3. 复用组件类（全站统一样式语言）
+   ========================================================================== */
+
+/* 3.1 页面容器：统一的宽度与安全区内边距 */
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: clamp(14px, 3vw, 28px) clamp(14px, 3.4vw, 28px);
+  padding-left: max(clamp(14px, 3.4vw, 28px), env(safe-area-inset-left));
+  padding-right: max(clamp(14px, 3.4vw, 28px), env(safe-area-inset-right));
+}
+
+.page-inner {
+  width: 100%;
+  max-width: var(--wide);
+  margin: 0 auto;
+}
+
+/* 3.2 卡片 / 面板 */
+.surface {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.surface-lg {
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+}
+
+/* 3.3 按钮：同一套尺寸与状态 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  background: var(--panel);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color var(--t-fast), color var(--t-fast), background var(--t-fast),
+    transform var(--t-fast), box-shadow var(--t-fast);
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: var(--brand-gradient);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(79, 110, 247, 0.28);
+}
+.btn-primary:hover:not(:disabled) {
+  border-color: transparent;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  box-shadow: none;
+}
+
+.btn-danger {
+  border-color: transparent;
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.24);
+}
+.btn-danger:hover:not(:disabled) {
+  border-color: transparent;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-lg {
+  min-height: 44px;
+  padding: 0 22px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-md);
+}
+
+.btn-icon {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* 触屏：保证点击区域足够大 */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 40px;
+  }
+  .btn-icon {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+  }
+  .btn-lg {
+    min-height: 48px;
+  }
+}
+
+/* 3.4 小控件：徽标 / chip / 标签 */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.tag {
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.icon-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: var(--r-md);
+  background: var(--brand-gradient);
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* 3.5 开关 */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 12.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.switch-track {
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-full);
+  background: #d8dce8;
+  transition: background var(--t-fast);
+}
+.switch-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(31, 36, 48, 0.24);
+  transition: transform var(--t-fast);
+}
+.switch input:checked + .switch-track {
+  background: var(--brand);
+}
+.switch input:checked + .switch-track .switch-thumb {
+  transform: translateX(16px);
+}
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* 3.6 工具栏（聊天页顶部操作区） */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+}
+.toolbar-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   4. 组件：应用头部（主页与两个聊天页共用）
+   ========================================================================== */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: 12px 16px;
+}
+
+.app-header-titles {
+  flex: 1;
+  min-width: 0;
+}
+.app-header-titles h1,
+.app-header-titles .app-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.app-header-titles p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .app-header {
+    padding: 10px 12px;
+  }
+  .app-header-titles h1,
+  .app-header-titles .app-title {
+    font-size: 15px;
+  }
+  .app-header-titles p {
+    font-size: 12px;
+  }
+}
+
+/* ==========================================================================
+   5. Markdown 渲染样式（AI 消息 / 文件内容）
+   ========================================================================== */
+.markdown-body {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+.markdown-body > *:last-child {
+  margin-bottom: 0;
+}
+.markdown-body p {
+  margin: 0 0 8px;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 14px 0 8px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.markdown-body h1 {
+  font-size: 19px;
+}
+.markdown-body h2 {
+  font-size: 17px;
+}
+.markdown-body h3 {
+  font-size: 15.5px;
+}
+.markdown-body ul,
+.markdown-body ol {
+  margin: 6px 0 10px;
+  padding-left: 22px;
+}
+.markdown-body li {
+  margin: 3px 0;
+}
+.markdown-body blockquote {
+  margin: 8px 0;
+  padding: 6px 12px;
+  border-left: 3px solid var(--brand);
+  background: var(--brand-soft);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  color: var(--text-2);
+}
+.markdown-body code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(31, 36, 48, 0.07);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+.markdown-body pre {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: #1f2430;
+  color: #e8ecf6;
+  overflow-x: auto;
+}
+.markdown-body pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+.markdown-body table {
+  width: 100%;
+  margin: 10px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+  display: block;
+  overflow-x: auto;
+}
+.markdown-body th,
+.markdown-body td {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.markdown-body th {
+  background: var(--panel-2);
+}
+.markdown-body a {
+  color: var(--link);
+  text-decoration: underline;
+}
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 0;
+}
+.markdown-body img {
+  max-width: 100%;
+  border-radius: var(--r-sm);
+}
+
+@media (max-width: 560px) {
+  .markdown-body h1 {
+    font-size: 17.5px;
+  }
+  .markdown-body h2 {
+    font-size: 16px;
+  }
+  .markdown-body h3 {
+    font-size: 15px;
+  }
+  .markdown-body ul,
+  .markdown-body ol {
+    padding-left: 18px;
+  }
+}
+
+/* ==========================================================================
+   6. 动效偏好 & 移动端输入体验
+   ========================================================================== */
+
+/* iOS Safari：字号小于 16px 的输入框聚焦时会自动放大页面 */
+@media (pointer: coarse) {
+  textarea,
+  input[type='text'],
+  input[type='search'] {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

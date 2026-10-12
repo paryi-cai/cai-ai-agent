@@ -1,0 +1,22 @@
+{
+  "name": "cai-ai-agent-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI 恋爱大师 + AI 超级智能体（Vue3 + Vite + EventSource SSE）",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "marked": "^15.0.4",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.7"
+  }
+}

@@ -7,9 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 抽象基础智能体类：管理智能体状态和多步骤执行流程（模板方法模式）
@@ -107,6 +109,94 @@ public abstract class BaseAgent {
             // 无论成功（完成/超步数）还是失败，都要清理资源（子类可重写 cleanup）
             this.cleanup();
         }
+    }
+
+    /**
+     * 运行智能体（流式输出版）：与 run() 逻辑一致，区别是每一步的结果通过 SseEmitter 实时推送
+     *
+     * 工作原理：Web 线程立刻返回 emitter（不阻塞），后台线程执行 Agent Loop，
+     * 每完成一步就 send 一次，客户端像"看直播"一样实时看到智能体的执行过程
+     *
+     * @param userPrompt 用户任务提示词
+     * @return SseEmitter（Spring 会把推送内容按 SSE 协议发给客户端）
+     */
+    public SseEmitter runStream(String userPrompt) {
+        // 创建 SSE 发射器，设置较长的超时时间（智能体任务执行时间长）
+        SseEmitter emitter = new SseEmitter(300000L); // 5 分钟超时
+
+        // 使用线程异步处理，避免长时间占用 Web 服务器线程池资源
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 状态校验（推送错误信息后直接结束）
+                if (this.state != AgentState.IDLE) {
+                    emitter.send("错误：无法从状态运行代理: " + this.state);
+                    emitter.complete();
+                    return;
+                }
+                if (StrUtil.isBlank(userPrompt)) {
+                    emitter.send("错误：不能使用空提示词运行代理");
+                    emitter.complete();
+                    return;
+                }
+
+                // 切换到运行状态，记录用户任务
+                state = AgentState.RUNNING;
+                messageList.add(new UserMessage(userPrompt));
+
+                try {
+                    // Agent Loop：每一步执行完立即推送结果
+                    for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
+                        int stepNumber = i + 1;
+                        currentStep = stepNumber;
+                        log.info("Executing step " + stepNumber + "/" + maxSteps);
+                        // 单步执行
+                        String stepResult = step();
+                        String result = "Step " + stepNumber + ": " + stepResult;
+                        // 实时推送这一步的结果
+                        emitter.send(result);
+                    }
+                    // 检查是否超出步骤限制
+                    if (currentStep >= maxSteps) {
+                        state = AgentState.FINISHED;
+                        emitter.send("执行结束: 达到最大步骤 (" + maxSteps + ")");
+                    }
+                    // 正常完成
+                    emitter.complete();
+                } catch (Exception e) {
+                    state = AgentState.ERROR;
+                    log.error("执行智能体失败", e);
+                    try {
+                        emitter.send("执行错误: " + e.getMessage());
+                        emitter.complete();
+                    } catch (Exception ex) {
+                        emitter.completeWithError(ex);
+                    }
+                } finally {
+                    // 清理资源
+                    this.cleanup();
+                }
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        });
+
+        // 超时回调：连接超时后收敛状态，避免智能体卡在 RUNNING
+        emitter.onTimeout(() -> {
+            this.state = AgentState.ERROR;
+            this.cleanup();
+            log.warn("SSE connection timed out");
+        });
+
+        // 完成回调：连接结束时确保资源清理、状态收敛
+        emitter.onCompletion(() -> {
+            if (this.state == AgentState.RUNNING) {
+                this.state = AgentState.FINISHED;
+            }
+            this.cleanup();
+            log.info("SSE connection completed");
+        });
+
+        return emitter;
     }
 
     /**

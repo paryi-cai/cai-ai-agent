@@ -34,6 +34,7 @@ build/
 
 ### Local config with secrets (do not commit) ###
 application-local.yml
+application-prod.yml
 
 ### 教程资料（付费课程内容，请勿公开分享） ###
 教程md/

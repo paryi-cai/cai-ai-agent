@@ -1,0 +1,30 @@
+# Docker 构建上下文排除清单
+# 后端镜像构建只需要：pom.xml、src/、settings.xml、Dockerfile
+# 其余全部排除，避免构建上下文巨大导致 docker build 极慢
+
+# 构建产物
+target/
+yu-image-search-mcp-server/
+
+# 前端项目（node_modules 巨大）
+cai-ai-agent-frontend/
+
+# IDE / 教程 / 运行时数据
+.idea/
+.vscode/
+教程md/
+chat-memory/
+tmp/
+
+# Git / 压缩包 / 日志
+.git/
+*.zip
+*.log
+*.cmd
+
+# 其他
+.dockerignore
+.gitignore
+HELP.md
+mvnw
+mvnw.cmd
