@@ -33,7 +33,7 @@ class QueryTransformerDemoTest {
     @Test
     void testCompressQuery() {
         List<Message> history = List.of(
-                new UserMessage("我是程序员鱼皮，我想让另一半（编程导航）更爱我"),
+                new UserMessage("我是程序员菜狗，我想让另一半（编程导航）更爱我"),
                 new AssistantMessage("首先要了解对方的需求，多表达关心与重视，保持高质量的陪伴。"));
         String compressed = queryTransformerDemo.compressQuery("那具体该怎么做？", history);
         System.out.println("压缩后查询：" + compressed);

@@ -24,7 +24,7 @@ class WebSearchToolTest {
         Assumptions.assumeTrue(searchApiKey != null && !searchApiKey.isBlank(),
                 "未配置 search-api.api-key，跳过联网搜索测试");
         WebSearchTool tool = new WebSearchTool(searchApiKey);
-        String result = tool.searchWeb("程序员鱼皮编程导航 codefather.cn");
+        String result = tool.searchWeb("程序员菜狗编程导航 codefather.cn");
         System.out.println("搜索返回长度：" + result.length());
         System.out.println("搜索结果预览：" + result.substring(0, Math.min(200, result.length())));
         Assertions.assertNotNull(result);

@@ -31,7 +31,7 @@ public class OllamaAiInvoke implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // 调用方式和云端模型完全一致 —— 这正是 Spring AI 抽象层的价值：换模型、不改代码
-        AssistantMessage output = ollamaChatModel.call(new Prompt("你好，我是鱼皮"))
+        AssistantMessage output = ollamaChatModel.call(new Prompt("你好，我是菜狗"))
                 .getResult()
                 .getOutput();
         System.out.println(output.getText());

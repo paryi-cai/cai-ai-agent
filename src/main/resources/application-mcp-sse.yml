@@ -12,6 +12,6 @@ spring:
         sse:
           connections:
             # 连接名可自定义
-            yu-image-search-server:
+            cai-image-search-server:
               url: http://localhost:8127   # MCP 服务端地址（服务端 sse profile）
               sse-endpoint: /sse           # SSE 端点路径（与服务端配置一致）

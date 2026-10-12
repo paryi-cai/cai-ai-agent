@@ -1,6 +1,6 @@
 package com.cai.caiaiagent.controller;
 
-import com.cai.caiaiagent.agent.YuManus;
+import com.cai.caiaiagent.agent.CaiManus;
 import com.cai.caiaiagent.app.LoveApp;
 import jakarta.annotation.Resource;
 import org.springframework.ai.chat.model.ChatModel;
@@ -95,7 +95,7 @@ public class AiController {
      */
     @GetMapping("/manus/chat")
     public SseEmitter doChatWithManus(String message, String chatId) {
-        YuManus yuManus = new YuManus(allTools, dashscopeChatModel);
-        return yuManus.runStream(message);
+        CaiManus caiManus = new CaiManus(allTools, dashscopeChatModel);
+        return caiManus.runStream(message);
     }
 }

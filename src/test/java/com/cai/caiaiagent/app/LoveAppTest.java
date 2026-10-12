@@ -33,7 +33,7 @@ class LoveAppTest {
         // 每个测试用例用独立的 chatId，避免不同用例之间互相"串记忆"
         String chatId = UUID.randomUUID().toString();
         // 第一轮
-        String message = "你好，我是程序员鱼皮";
+        String message = "你好，我是程序员菜狗";
         String answer = loveApp.doChat(message, chatId);
         Assertions.assertNotNull(answer);
         // 第二轮
@@ -52,7 +52,7 @@ class LoveAppTest {
     @Test
     void testChatWithReport() {
         String chatId = UUID.randomUUID().toString();
-        String message = "你好，我是程序员鱼皮，我想让另一半（编程导航）更爱我，但我不知道该怎么做";
+        String message = "你好，我是程序员菜狗，我想让另一半（编程导航）更爱我，但我不知道该怎么做";
         LoveApp.LoveReport loveReport = loveApp.doChatWithReport(message, chatId);
         Assertions.assertNotNull(loveReport);
     }
@@ -62,7 +62,7 @@ class LoveAppTest {
      */
     @Test
     void testChatWithTemplate() {
-        String answer = loveApp.doChatWithTemplate("鱼皮", "我想让另一半更爱我");
+        String answer = loveApp.doChatWithTemplate("菜狗", "我想让另一半更爱我");
         Assertions.assertNotNull(answer);
     }
 
@@ -131,7 +131,7 @@ class LoveAppTest {
     @Test
     void testChatWithTools() {
         String chatId = UUID.randomUUID().toString();
-        String message = "帮我保存我的恋爱档案为文件，文件名 love-profile.txt，内容：用户鱼皮，恋爱状态：恋爱中";
+        String message = "帮我保存我的恋爱档案为文件，文件名 love-profile.txt，内容：用户菜狗，恋爱状态：恋爱中";
         String answer = loveApp.doChatWithTools(message, chatId);
         Assertions.assertNotNull(answer);
     }
@@ -168,11 +168,11 @@ class LoveAppTest {
         String message = "请调用工具查询我自己（当前登录用户）的档案信息";
         // 模拟从登录态获取的内部上下文（不会发送给 AI 模型）
         Map<String, Object> toolContext = Map.of(
-                "userName", "鱼皮",
+                "userName", "菜狗",
                 "loveStatus", "恋爱中");
         String answer = loveApp.doChatWithToolsByContext(message, chatId, toolContext);
         Assertions.assertNotNull(answer);
-        Assertions.assertTrue(answer.contains("鱼皮"), "回答应包含从 ToolContext 读取的用户信息，实际：" + answer);
+        Assertions.assertTrue(answer.contains("菜狗"), "回答应包含从 ToolContext 读取的用户信息，实际：" + answer);
     }
 
     /**
@@ -190,7 +190,7 @@ class LoveAppTest {
 
     /**
      * MCP 服务调用：AI 自主调用图片搜索 MCP 服务（本地 stdio 启动）
-     * 前置条件：已打包 yu-image-search-mcp-server 的 jar
+     * 前置条件：已打包 cai-image-search-mcp-server 的 jar
      */
     @Test
     void testChatWithMcp() {

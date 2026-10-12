@@ -19,7 +19,7 @@ public class LangChainAiInvoke {
                 .modelName("qwen-max")
                 .build();
         // chat()：一行完成对话并返回文本结果（对比 Spring AI 的 ChatModel.call() 链式调用风格）
-        String answer = qwenModel.chat("我是程序员鱼皮，这是编程导航 codefather.cn 的原创项目教程");
+        String answer = qwenModel.chat("我是程序员菜狗，这是编程导航 codefather.cn 的原创项目教程");
         System.out.println(answer);
     }
 }

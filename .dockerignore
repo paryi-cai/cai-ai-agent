@@ -4,7 +4,7 @@
 
 # 构建产物
 target/
-yu-image-search-mcp-server/
+cai-image-search-mcp-server/
 
 # 前端项目（node_modules 巨大）
 cai-ai-agent-frontend/

@@ -21,9 +21,9 @@ class ManualToolCallingDemoTest {
     void testManualToolExecution() {
         String answer = manualToolCallingDemo.chatWithManualToolExecution(
                 "请调用工具查询我自己（当前登录用户）的档案信息",
-                Map.of("userName", "鱼皮", "loveStatus", "恋爱中"));
+                Map.of("userName", "菜狗", "loveStatus", "恋爱中"));
         System.out.println("最终回答：" + answer);
         Assertions.assertNotNull(answer);
-        Assertions.assertTrue(answer.contains("鱼皮"), "回答应包含上下文中的用户信息，实际：" + answer);
+        Assertions.assertTrue(answer.contains("菜狗"), "回答应包含上下文中的用户信息，实际：" + answer);
     }
 }
